@@ -1,1 +1,49 @@
-dsfgvlsdfg
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Moje recepty</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Moje recepty</h1>
+
+<nav>
+    <a href="recipe-calculator.html">Přejít na kalkulačku receptů</a>
+</nav>
+
+<div class="form-container">
+    <h2>Přidat nový recept</h2>
+
+    <input id="title" type="text" placeholder="Název receptu">
+
+    <select id="category">
+        <option value="snidane">Snídaně</option>
+        <option value="obed">Oběd</option>
+        <option value="svacina">Svačina</option>
+        <option value="vecere">Večeře</option>
+    </select>
+
+    <textarea id="ingredients" placeholder="Ingredience (každá na nový řádek)"></textarea>
+    <textarea id="instructions" placeholder="Postup přípravy"></textarea>
+
+    <button id="addBtn">Přidat recept</button>
+</div>
+
+<h2>Snídaně</h2>
+<div id="snidane" class="recipe-list"></div>
+
+<h2>Oběd</h2>
+<div id="obed" class="recipe-list"></div>
+
+<h2>Svačina</h2>
+<div id="svacina" class="recipe-list"></div>
+
+<h2>Večeře</h2>
+<div id="vecere" class="recipe-list"></div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

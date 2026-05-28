@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Kalkulačka receptů</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Kalkulačka receptů</h1>
+
+<nav>
+    <a href="index.html">Zpět na moje recepty</a>
+</nav>
+
+<div class="form-container">
+    <h2>Zadej recept</h2>
+
+    <textarea id="ingredients" placeholder="Ingredience (formát: název - gramy)">
+Banán - 100
+Ovesné vločky - 40
+Vejce - 50
+    </textarea>
+
+    <input id="baseWeight" type="number" placeholder="Základní hmotnost receptu (g)">
+    <input id="targetWeight" type="number" placeholder="Moje porce (g)">
+
+    <button id="calcBtn">Vypočítat</button>
+</div>
+
+<h2>Výsledek</h2>
+<div id="result"></div>
+
+<script src="calculator.js"></script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+/* === GLOBAL === */
+body {
+    font-family: Arial, sans-serif;
+    margin: 40px;
+    background: linear-gradient(135deg, #1e1f29, #2a2d3e, #3a3f55);
+    background-attachment: fixed;
+    color: #fff;
+    transition: 0.3s;
+}
+
+/* === LIGHT MODE === */
+body.light {
+    background: linear-gradient(135deg, #f0f0f0, #ffffff);
+    color: #222;
+}
+
+body.light .form-container,
+body.light .recipe {
+    background: rgba(255,255,255,0.8);
+    color: #222;
+}
+
+/* === GLASS PANELS === */
+.form-container, .recipe {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 20px;
+    margin-bottom: 30px;
+    color: #fff;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    animation: fadeUp 0.6s ease forwards;
+    opacity: 0;
+}
+
+/* === ANIMACE === */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* === HOVER EFEKT === */
+.recipe:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+    transition: 0.25s;
+}
+
+/* === NADPISY === */
+h1, h2 {
+    text-align: center;
+    color: #ffffff;
+    text-shadow: 0 0 12px rgba(255,255,255,0.3);
+}
+
+/* === ODKAZY === */
+nav a {
+    color: #76c7ff;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+/* Inputs – lepší kontrast */
+.form-container input,
+.form-container select,
+.form-container textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.25);
+    color: #fff;
+    font-size: 16px;
+    backdrop-filter: blur(10px);
+    transition: 0.2s;
+}
+
+/* Placeholder – jasnější */
+.form-container input::placeholder,
+.form-container textarea::placeholder {
+    color: #f5f5f5;
+    opacity: 0.9;
+}
+
+/* Focus – ještě lepší viditelnost */
+.form-container input:focus,
+.form-container textarea:focus,
+.form-container select:focus {
+    background: rgba(255,255,255,0.35);
+    border: 1px solid #00eaff;
+    box-shadow: 0 0 12px #00eaff;
+    outline: none;
+}
+
+
+.form-container input:focus,
+.form-container textarea:focus,
+.form-container select:focus {
+    background: rgba(255,255,255,0.25);
+    box-shadow: 0 0 10px #00eaff;
+    outline: none;
+}
+
+.form-container input::placeholder,
+.form-container textarea::placeholder {
+    color: #ddd;
+}
+
+/* === TLAČÍTKO === */
+.form-container button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0, 242, 254, 0.4);
+    transition: 0.25s;
+}
+
+.form-container button:hover {
+    background: linear-gradient(135deg, #00f2fe, #4facfe);
+    transform: translateY(-2px);
+}
+
+/* === RECEPTY === */
+.recipe h3 {
+    margin: 0 0 5px 0;
+    color: #fff;
+    font-size: 20px;
+    text-shadow: 0 0 10px rgba(0,255,255,0.3);
+}
+
+.recipe small {
+    color: #ccc;
+}
+
+/* === BAREVNÉ TAGY === */
+.tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.tag-snidane { background: #ffd54f; color: #000; }
+.tag-obed { background: #ff9800; color: #000; }
+.tag-svacina { background: #8bc34a; color: #000; }
+.tag-vecere { background: #42a5f5; color: #000; }
+
+/* === GRID LAYOUT === */
+.recipe-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
