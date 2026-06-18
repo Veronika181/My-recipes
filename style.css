@@ -452,6 +452,42 @@ nav {
 .gh-badge-on  { background: #8bc34a; color: #000; }
 .gh-badge-off { background: rgba(255,255,255,0.15); color: #ccc; }
 
+/* === NÁKUPNÍ SEZNAM === */
+.shopping-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.shopping-item {
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    transition: 0.2s;
+}
+
+.shopping-item label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.shopping-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #4facfe;
+    flex-shrink: 0;
+}
+
+.shopping-item.checked {
+    opacity: 0.45;
+    text-decoration: line-through;
+}
+
 /* === AKCE NA RECEPTU === */
 .recipe-actions {
     display: flex;

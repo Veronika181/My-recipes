@@ -44,6 +44,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             pridatDoPlanu(cat);
         });
     });
+
+    document.getElementById("generate-shopping-btn").addEventListener("click", generujNakupniSeznam);
+    document.getElementById("copy-shopping-btn").addEventListener("click", kopirujSeznam);
+    document.getElementById("clear-shopping-btn").addEventListener("click", () => {
+        document.getElementById("shopping-list-output").style.display = "none";
+    });
 });
 
 async function nactiProfilAplan() {
@@ -223,4 +229,72 @@ function setBar(id, type, value, goal) {
     const pct = Math.min((value / goal) * 100, 100);
     bar.style.width = pct + "%";
     bar.className = value > goal ? `progress-fill ${type} over` : `progress-fill ${type}`;
+}
+
+// === NÁKUPNÍ SEZNAM ===
+function parsujIngredience(radky) {
+    const agregace = {};
+    radky.forEach(radek => {
+        radek = radek.trim();
+        if (!radek) return;
+        // Formát: "Název: 100 g" nebo "Název - 100 g" nebo "Název: 100"
+        const match = radek.match(/^(.+?)[\s]*[:\-][\s]*([\d,.]+)\s*(\w*)$/);
+        if (match) {
+            const nazev = match[1].trim().toLowerCase();
+            const mnozstvi = parseFloat(match[2].replace(",", "."));
+            const jednotka = match[3] || "g";
+            if (!agregace[nazev]) agregace[nazev] = { mnozstvi: 0, jednotka, originalNazev: match[1].trim() };
+            agregace[nazev].mnozstvi += mnozstvi;
+        } else {
+            if (!agregace[radek.toLowerCase()]) agregace[radek.toLowerCase()] = { mnozstvi: null, jednotka: "", originalNazev: radek };
+        }
+    });
+    return Object.values(agregace);
+}
+
+function generujNakupniSeznam() {
+    const den = denPlanu();
+    const recepty = JSON.parse(localStorage.getItem("recepty") || "[]");
+    const vsechnyIngredience = [];
+
+    KATEGORIE.forEach(cat => {
+        den[cat].forEach(title => {
+            const recept = recepty.find(r => r.title === title);
+            if (recept && recept.ingredients) vsechnyIngredience.push(...recept.ingredients);
+        });
+    });
+
+    if (vsechnyIngredience.length === 0) {
+        alert("V plánu pro tento den nejsou žádné recepty.");
+        return;
+    }
+
+    const polozky = parsujIngredience(vsechnyIngredience);
+    const ul = document.getElementById("shopping-items");
+    ul.innerHTML = "";
+
+    polozky.sort((a, b) => a.originalNazev.localeCompare(b.originalNazev, "cs")).forEach(p => {
+        const li = document.createElement("li");
+        li.className = "shopping-item";
+        const text = p.mnozstvi !== null
+            ? `${p.originalNazev}: ${Math.round(p.mnozstvi * 10) / 10} ${p.jednotka}`
+            : p.originalNazev;
+        li.innerHTML = `<label><input type="checkbox"> ${text}</label>`;
+        li.querySelector("input").addEventListener("change", function () {
+            li.classList.toggle("checked", this.checked);
+        });
+        ul.appendChild(li);
+    });
+
+    document.getElementById("shopping-list-output").style.display = "block";
+}
+
+function kopirujSeznam() {
+    const items = [...document.querySelectorAll("#shopping-items .shopping-item")];
+    const text = items.map(li => li.querySelector("label").textContent.trim()).join("\n");
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById("copy-shopping-btn");
+        btn.textContent = "✓ Zkopírováno";
+        setTimeout(() => btn.textContent = "📋 Kopírovat", 2000);
+    });
 }
