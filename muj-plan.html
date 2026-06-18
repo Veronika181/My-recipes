@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Můj jídelní plán</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .plan-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+            margin-top: 8px;
+        }
+        .plan-meal {
+            background: rgba(255,255,255,0.055);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 18px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeUp 0.45s ease forwards;
+            opacity: 0;
+        }
+        .plan-meal:nth-child(1) { animation-delay: 0.05s; }
+        .plan-meal:nth-child(2) { animation-delay: 0.10s; }
+        .plan-meal:nth-child(3) { animation-delay: 0.15s; }
+        .plan-meal:nth-child(4) { animation-delay: 0.20s; }
+        .plan-meal:nth-child(5) { animation-delay: 0.25s; }
+
+        .meal-stripe { position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 18px 18px 0 0; }
+        .stripe-snidane  { background: linear-gradient(90deg, #fcd34d, #f59e0b); }
+        .stripe-svacina  { background: linear-gradient(90deg, #86efac, #22c55e); }
+        .stripe-obed     { background: linear-gradient(90deg, #fb923c, #ef4444); }
+        .stripe-vecere   { background: linear-gradient(90deg, #60a5fa, #818cf8); }
+
+        .meal-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .meal-icon {
+            font-size: 1.6rem;
+            line-height: 1;
+        }
+        .meal-title-block {}
+        .meal-category {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.35);
+        }
+        .meal-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            line-height: 1.3;
+        }
+
+        .plan-food-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 14px;
+        }
+        .plan-food-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.85);
+        }
+        .plan-food-list li:last-child { border-bottom: none; }
+        .food-grams {
+            font-size: 12px;
+            font-weight: 600;
+            color: #93c5fd;
+            background: rgba(79,172,254,0.1);
+            border: 1px solid rgba(79,172,254,0.2);
+            border-radius: 20px;
+            padding: 2px 9px;
+            white-space: nowrap;
+        }
+
+        .meal-macros {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.07);
+        }
+        .meal-macros span {
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 20px;
+            padding: 3px 9px;
+        }
+        .m-kcal   { background: rgba(59,130,246,0.12); color: #93c5fd; border: 1px solid rgba(59,130,246,0.2); }
+        .m-prot   { background: rgba(236,72,153,0.12); color: #f9a8d4; border: 1px solid rgba(236,72,153,0.2); }
+        .m-carbs  { background: rgba(245,158,11,0.12); color: #fcd34d; border: 1px solid rgba(245,158,11,0.2); }
+        .m-fat    { background: rgba(34,197,94,0.12);  color: #86efac; border: 1px solid rgba(34,197,94,0.2); }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 14px;
+            padding: 14px 16px;
+            text-align: center;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .stat-unit { font-size: 0.8rem; color: rgba(255,255,255,0.4); margin-left: 2px; }
+
+        .macro-goal-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        .macro-goal {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        .macro-goal .mg-label { font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 600; margin-bottom: 4px; }
+        .macro-goal .mg-val   { font-size: 1.1rem; font-weight: 700; }
+        .mg-kcal  { color: #93c5fd; }
+        .mg-prot  { color: #f9a8d4; }
+        .mg-carbs { color: #fcd34d; }
+        .mg-fat   { color: #86efac; }
+
+        .daily-total {
+            background: rgba(59,130,246,0.08);
+            border: 1px solid rgba(59,130,246,0.2);
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-top: 20px;
+        }
+        .daily-total h3 {
+            margin: 0 0 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+        .daily-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        .daily-row span:first-child { color: rgba(255,255,255,0.55); }
+        .daily-row .dval { font-weight: 700; font-size: 1rem; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+        .form-row label {
+            display: flex;
+            flex-direction: column;
+            font-size: 12px;
+            color: rgba(255,255,255,0.45);
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            gap: 5px;
+        }
+        .shuffle-btn {
+            background: rgba(167,139,250,0.15);
+            border: 1px solid rgba(167,139,250,0.35);
+            color: #c4b5fd;
+            border-radius: 10px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .shuffle-btn:hover {
+            background: rgba(167,139,250,0.25);
+            transform: translateY(-1px);
+        }
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .results-header h2 {
+            margin: 0 !important;
+        }
+        @media (max-width: 600px) {
+            .macro-goal-bar { grid-template-columns: repeat(2, 1fr); }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+<h1>🥗 Můj jídelní plán</h1>
+
+<nav>
+    <a href="index.html">🍽️ Recepty</a>
+    <a href="planner.html">📋 Denní plán</a>
+    <a href="calendar.html">📅 Kalendář</a>
+    <a href="import-jidelnicek.html">📥 Import</a>
+</nav>
+
+<!-- Osobní údaje -->
+<div class="form-container">
+    <h2>Moje údaje</h2>
+    <p style="font-size:13px; color:rgba(255,255,255,0.4); margin:0 0 16px">Vypočítám ti denní kalorický cíl a sestavím jídelní plán přesně na tvoje tělo.</p>
+    <div class="form-row">
+        <label>Váha (kg)<input type="number" id="inp-vaha" placeholder="65" min="30" max="200"></label>
+        <label>Výška (cm)<input type="number" id="inp-vyska" placeholder="168" min="140" max="220"></label>
+        <label>Věk<input type="number" id="inp-vek" placeholder="30" min="15" max="90"></label>
+        <label>Pohlaví
+            <select id="inp-pohlavi">
+                <option value="zena">Žena</option>
+                <option value="muz">Muž</option>
+            </select>
+        </label>
+        <label>Aktivita
+            <select id="inp-aktivita">
+                <option value="1.2">Sedavý (práce u stolu)</option>
+                <option value="1.375">Lehká (1–3× týdně sport)</option>
+                <option value="1.55" selected>Střední (3–5× týdně)</option>
+                <option value="1.725">Vysoká (6–7× týdně)</option>
+                <option value="1.9">Extrémní (2× denně)</option>
+            </select>
+        </label>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:16px; flex-wrap:wrap">
+        <button id="compute-btn" style="flex:1; min-width:160px">🥗 Vygenerovat plán</button>
+    </div>
+    <p id="form-err" style="color:#f87171; font-size:13px; margin:8px 0 0; min-height:18px"></p>
+</div>
+
+<!-- Výsledky -->
+<div id="results" style="display:none">
+
+    <!-- Statistiky -->
+    <div class="form-container">
+        <div class="results-header">
+            <h2>Tvůj denní plán</h2>
+            <button class="shuffle-btn" id="shuffle-btn">🔀 Jiný den</button>
+        </div>
+
+        <div class="stats-row" id="stats-row"></div>
+
+        <div class="macro-goal-bar" id="macro-goals"></div>
+
+        <p style="font-size:12px; color:rgba(255,255,255,0.3); margin:0; text-align:center">
+            Deficit 500 kcal/den → přibližně −0,5 kg týdně
+        </p>
+    </div>
+
+    <!-- Jídla -->
+    <div class="plan-grid" id="plan-grid"></div>
+
+    <!-- Denní součet -->
+    <div class="daily-total" id="daily-total"></div>
+
+</div>
+
+</div><!-- end page-wrapper -->
+
+<script src="nutrition.js"></script>
+<script>
+document.querySelectorAll('nav a').forEach(a => {
+    if (a.getAttribute('href') === location.pathname.split('/').pop()) a.classList.add('active');
+});
+
+// ═══════════════════════════════
+// ŠABLONY JÍDEL
+// ═══════════════════════════════
+const SNIDANE = [
+    { name:"Skyr bowl", emoji:"🫐", cat:"snidane",
+      items:[{food:"skyr",label:"Skyr",g:200},{food:"boruvky",label:"Borůvky",g:100},{food:"ovesne vlocky",label:"Ovesné vločky",g:40}] },
+    { name:"Vajíčka s chlebem", emoji:"🥚", cat:"snidane",
+      items:[{food:"vejce",label:"Vejce (2 ks)",g:110},{food:"lamankovy chleb",label:"Lámankový chléb",g:60},{food:"eidam 30",label:"Eidam 30%",g:30}] },
+    { name:"Cornflakes s jogurtem", emoji:"🥣", cat:"snidane",
+      items:[{food:"cornflakes",label:"Cornflakes",g:40},{food:"bily jogurt",label:"Bílý jogurt",g:160},{food:"jahody",label:"Jahody",g:150}] },
+    { name:"Tvaroh s ovocem", emoji:"🍌", cat:"snidane",
+      items:[{food:"tvaroh",label:"Tvaroh",g:150},{food:"banan",label:"Banán",g:100},{food:"mandle",label:"Mandle",g:15}] },
+    { name:"Toast se šunkou", emoji:"🥪", cat:"snidane",
+      items:[{food:"lamankovy chleb",label:"Lámankový chléb",g:80},{food:"lucina linie",label:"Lučina linie",g:30},{food:"kruti sunka",label:"Krůtí šunka",g:60}] },
+];
+
+const SVACINA_DOP = [
+    { name:"Jablko & tvaroh", emoji:"🍎", cat:"svacina",
+      items:[{food:"jablko",label:"Jablko",g:150},{food:"tvaroh",label:"Tvaroh",g:100}] },
+    { name:"Banán & jogurt", emoji:"🍌", cat:"svacina",
+      items:[{food:"banan",label:"Banán",g:100},{food:"bily jogurt",label:"Bílý jogurt",g:150}] },
+    { name:"Borůvky & cottage", emoji:"🫐", cat:"svacina",
+      items:[{food:"boruvky",label:"Borůvky",g:120},{food:"cottage",label:"Cottage sýr",g:100}] },
+    { name:"Nektarinka & skyr", emoji:"🍑", cat:"svacina",
+      items:[{food:"nektarinky",label:"Nektarinka",g:150},{food:"skyr",label:"Skyr",g:120}] },
+    { name:"Broskev & Bebe", emoji:"🍪", cat:"svacina",
+      items:[{food:"broskve",label:"Broskev",g:120},{food:"bebe dobre rano",label:"Bebe Dobré ráno",g:25}] },
+];
+
+const OBED = [
+    { name:"Kuřecí prsa s rýží", emoji:"🍗", cat:"obed",
+      items:[{food:"kureci prsa",label:"Kuřecí prsa",g:130},{food:"ryze",label:"Rýže (suchá)",g:65},{food:"brokolice",label:"Brokolice",g:180}] },
+    { name:"Treska s bramborami", emoji:"🐟", cat:"obed",
+      items:[{food:"treska",label:"Treska",g:200},{food:"brambory",label:"Brambory vařené",g:200},{food:"rajcata",label:"Rajčata",g:100}] },
+    { name:"Těstoviny s hovězím", emoji:"🍝", cat:"obed",
+      items:[{food:"mlete hovezi",label:"Mleté hovězí",g:100},{food:"spagety",label:"Špagety (suché)",g:65},{food:"rajcatova stava",label:"Rajčatová stáva",g:120}] },
+    { name:"Tunák s rýží", emoji:"🥫", cat:"obed",
+      items:[{food:"tunac",label:"Tunák z konzervy",g:130},{food:"ryze",label:"Rýže (suchá)",g:65},{food:"kukurice",label:"Kukuřice",g:60}] },
+    { name:"Kuřecí s noky", emoji:"🫕", cat:"obed",
+      items:[{food:"kureci prsa",label:"Kuřecí prsa",g:130},{food:"noky",label:"Bramborové noky",g:160},{food:"rajcata",label:"Rajčata cherry",g:100}] },
+];
+
+const SVACINA_ODP = [
+    { name:"Maliny & skyr", emoji:"🍓", cat:"svacina",
+      items:[{food:"maliny",label:"Maliny",g:120},{food:"skyr",label:"Skyr",g:130}] },
+    { name:"Jablko & mandle", emoji:"🍎", cat:"svacina",
+      items:[{food:"jablko",label:"Jablko",g:160},{food:"mandle",label:"Mandle",g:20}] },
+    { name:"Skyr s borůvkami", emoji:"🫐", cat:"svacina",
+      items:[{food:"skyr",label:"Skyr",g:150},{food:"boruvky",label:"Borůvky",g:100}] },
+    { name:"Broskev & jogurt", emoji:"🍑", cat:"svacina",
+      items:[{food:"broskve",label:"Broskev",g:130},{food:"bily jogurt",label:"Bílý jogurt",g:130}] },
+    { name:"Meloun & tvaroh", emoji:"🍉", cat:"svacina",
+      items:[{food:"meloun",label:"Meloun",g:200},{food:"tvaroh",label:"Tvaroh",g:100}] },
+];
+
+const VECERE = [
+    { name:"Treska se zeleninou", emoji:"🥦", cat:"vecere",
+      items:[{food:"treska",label:"Treska",g:160},{food:"brokolice",label:"Brokolice",g:160},{food:"vejce",label:"Vejce",g:55}] },
+    { name:"Kuřecí s chlebem", emoji:"🥙", cat:"vecere",
+      items:[{food:"kureci prsa",label:"Kuřecí prsa",g:110},{food:"lamankovy chleb",label:"Lámankový chléb",g:55},{food:"rajcata",label:"Rajčata",g:100}] },
+    { name:"Tunák s chlebem", emoji:"🐟", cat:"vecere",
+      items:[{food:"tunac",label:"Tunák z konzervy",g:120},{food:"lucina linie",label:"Lučina linie",g:30},{food:"lamankovy chleb",label:"Lámankový chléb",g:50}] },
+    { name:"Tvaroh s borůvkami", emoji:"🫐", cat:"vecere",
+      items:[{food:"tvaroh",label:"Tvaroh",g:200},{food:"boruvky",label:"Borůvky",g:100}] },
+    { name:"Vejce se šunkou", emoji:"🍳", cat:"vecere",
+      items:[{food:"vejce",label:"Vejce (2 ks)",g:110},{food:"kruti sunka",label:"Krůtí šunka",g:60},{food:"eidam 30",label:"Eidam 30%",g:30}] },
+];
+
+const CAT_LABEL = { snidane:"Snídaně", svacina:"Svačina", obed:"Oběd", vecere:"Večeře" };
+const CAT_STRIPE = { snidane:"stripe-snidane", svacina:"stripe-svacina", obed:"stripe-obed", vecere:"stripe-vecere" };
+
+// Procentuální rozdělení kalorií do jídel
+const MEAL_SPLIT = [
+    { key:"snidane", pool:SNIDANE,     pct:0.25, label:"Snídaně",      idx:0 },
+    { key:"svacina", pool:SVACINA_DOP, pct:0.10, label:"Svačina dop.", idx:0 },
+    { key:"obed",    pool:OBED,        pct:0.35, label:"Oběd",         idx:0 },
+    { key:"svacina", pool:SVACINA_ODP, pct:0.10, label:"Svačina odp.", idx:0 },
+    { key:"vecere",  pool:VECERE,      pct:0.20, label:"Večeře",       idx:0 },
+];
+
+// ═══════════════════════════════
+// VÝPOČTY
+// ═══════════════════════════════
+function calcMacros(items) {
+    let kcal=0, protein=0, carbs=0, fat=0;
+    for (const it of items) {
+        const e = POTRAVINY[it.food];
+        if (!e) continue;
+        const f = (it.sg != null ? it.sg : it.g) / 100;
+        kcal += e.kcal * f; protein += e.protein * f;
+        carbs += e.carbs * f; fat += e.fat * f;
+    }
+    return { kcal:Math.round(kcal), protein:+(protein.toFixed(1)), carbs:+(carbs.toFixed(1)), fat:+(fat.toFixed(1)) };
+}
+
+function scaleMeal(tpl, targetKcal) {
+    const base = calcMacros(tpl.items);
+    const factor = targetKcal / base.kcal;
+    return {
+        ...tpl,
+        items: tpl.items.map(it => ({
+            ...it,
+            sg: Math.max(5, Math.round(it.g * factor / 5) * 5)
+        }))
+    };
+}
+
+let dayOffset = 0;
+let lastGoal = null;
+
+function pickIndex(pool, base) {
+    return (base + dayOffset) % pool.length;
+}
+
+function generatePlan(cil) {
+    lastGoal = cil;
+    return MEAL_SPLIT.map((slot, i) => {
+        const idx = pickIndex(slot.pool, i * 7);
+        const tpl = slot.pool[idx];
+        return { slot, meal: scaleMeal(tpl, cil * slot.pct) };
+    });
+}
+
+// ═══════════════════════════════
+// RENDER
+// ═══════════════════════════════
+function renderMeal(meal) {
+    const macros = calcMacros(meal.items);
+    const items = meal.items.map(it =>
+        `<li><span>${it.label}</span><span class="food-grams">${it.sg} g</span></li>`
+    ).join('');
+    return `
+        <div class="plan-meal">
+            <div class="meal-stripe ${CAT_STRIPE[meal.cat]}"></div>
+            <div class="meal-header">
+                <div class="meal-icon">${meal.emoji}</div>
+                <div class="meal-title-block">
+                    <div class="meal-category">${CAT_LABEL[meal.cat]}</div>
+                    <div class="meal-name">${meal.name}</div>
+                </div>
+            </div>
+            <ul class="plan-food-list">${items}</ul>
+            <div class="meal-macros">
+                <span class="m-kcal">⚡ ${macros.kcal} kcal</span>
+                <span class="m-prot">B ${macros.protein} g</span>
+                <span class="m-carbs">S ${macros.carbs} g</span>
+                <span class="m-fat">T ${macros.fat} g</span>
+            </div>
+        </div>
+    `;
+}
+
+function renderAll(plan, userData) {
+    const { bmr, tdee, cil, vaha } = userData;
+
+    // Stats
+    document.getElementById('stats-row').innerHTML = `
+        <div class="stat-box"><div class="stat-label">BMR</div><div class="stat-value">${Math.round(bmr)}<span class="stat-unit">kcal</span></div></div>
+        <div class="stat-box"><div class="stat-label">TDEE</div><div class="stat-value">${Math.round(tdee)}<span class="stat-unit">kcal</span></div></div>
+        <div class="stat-box"><div class="stat-label">Cíl (deficit)</div><div class="stat-value">${cil}<span class="stat-unit">kcal</span></div></div>
+        <div class="stat-box"><div class="stat-label">Deficit</div><div class="stat-value">${Math.round(tdee-cil)}<span class="stat-unit">kcal</span></div></div>
+    `;
+
+    // Macro goals
+    const protGoal = Math.round(vaha * 1.8);
+    const fatGoal  = Math.round(cil * 0.25 / 9);
+    const carbGoal = Math.round((cil - protGoal * 4 - fatGoal * 9) / 4);
+    document.getElementById('macro-goals').innerHTML = `
+        <div class="macro-goal"><div class="mg-label">Kalorie</div><div class="mg-val mg-kcal">${cil} kcal</div></div>
+        <div class="macro-goal"><div class="mg-label">Bílkoviny</div><div class="mg-val mg-prot">${protGoal} g</div></div>
+        <div class="macro-goal"><div class="mg-label">Sacharidy</div><div class="mg-val mg-carbs">${carbGoal} g</div></div>
+        <div class="macro-goal"><div class="mg-label">Tuky</div><div class="mg-val mg-fat">${fatGoal} g</div></div>
+    `;
+
+    // Meals
+    document.getElementById('plan-grid').innerHTML = plan.map(p => renderMeal(p.meal)).join('');
+
+    // Daily total
+    let totKcal=0, totP=0, totS=0, totT=0;
+    for (const p of plan) {
+        const m = calcMacros(p.meal.items);
+        totKcal += m.kcal; totP += m.protein; totS += m.carbs; totT += m.fat;
+    }
+    totP = +(totP.toFixed(1)); totS = +(totS.toFixed(1)); totT = +(totT.toFixed(1));
+
+    const pctP = Math.min(100, Math.round(totP/protGoal*100));
+    const pctS = Math.min(100, Math.round(totS/carbGoal*100));
+    const pctT = Math.min(100, Math.round(totT/fatGoal*100));
+    const pctK = Math.min(100, Math.round(totKcal/cil*100));
+
+    document.getElementById('daily-total').innerHTML = `
+        <h3>Denní součet</h3>
+        <div class="daily-row">
+            <span>Kalorie</span>
+            <div style="display:flex;align-items:center;gap:12px;flex:1;justify-content:flex-end">
+                <div style="flex:1;max-width:180px;background:rgba(255,255,255,0.07);border-radius:6px;height:6px;overflow:hidden">
+                    <div style="width:${pctK}%;height:100%;background:linear-gradient(90deg,#3b82f6,#06b6d4);border-radius:6px"></div>
+                </div>
+                <span class="dval" style="color:#93c5fd;min-width:80px;text-align:right">${totKcal} kcal</span>
+            </div>
+        </div>
+        <div class="daily-row">
+            <span>Bílkoviny</span>
+            <div style="display:flex;align-items:center;gap:12px;flex:1;justify-content:flex-end">
+                <div style="flex:1;max-width:180px;background:rgba(255,255,255,0.07);border-radius:6px;height:6px;overflow:hidden">
+                    <div style="width:${pctP}%;height:100%;background:linear-gradient(90deg,#ec4899,#f43f5e);border-radius:6px"></div>
+                </div>
+                <span class="dval" style="color:#f9a8d4;min-width:80px;text-align:right">${totP} g / ${protGoal} g</span>
+            </div>
+        </div>
+        <div class="daily-row">
+            <span>Sacharidy</span>
+            <div style="display:flex;align-items:center;gap:12px;flex:1;justify-content:flex-end">
+                <div style="flex:1;max-width:180px;background:rgba(255,255,255,0.07);border-radius:6px;height:6px;overflow:hidden">
+                    <div style="width:${pctS}%;height:100%;background:linear-gradient(90deg,#f59e0b,#f97316);border-radius:6px"></div>
+                </div>
+                <span class="dval" style="color:#fcd34d;min-width:80px;text-align:right">${totS} g / ${carbGoal} g</span>
+            </div>
+        </div>
+        <div class="daily-row">
+            <span>Tuky</span>
+            <div style="display:flex;align-items:center;gap:12px;flex:1;justify-content:flex-end">
+                <div style="flex:1;max-width:180px;background:rgba(255,255,255,0.07);border-radius:6px;height:6px;overflow:hidden">
+                    <div style="width:${pctT}%;height:100%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:6px"></div>
+                </div>
+                <span class="dval" style="color:#86efac;min-width:80px;text-align:right">${totT} g / ${fatGoal} g</span>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('results').style.display = 'block';
+    document.getElementById('results').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// ═══════════════════════════════
+// EVENTS
+// ═══════════════════════════════
+let userData = null;
+
+document.getElementById('compute-btn').addEventListener('click', () => {
+    const vaha     = parseFloat(document.getElementById('inp-vaha').value);
+    const vyska    = parseFloat(document.getElementById('inp-vyska').value);
+    const vek      = parseFloat(document.getElementById('inp-vek').value);
+    const pohlavi  = document.getElementById('inp-pohlavi').value;
+    const aktivita = parseFloat(document.getElementById('inp-aktivita').value);
+    const err      = document.getElementById('form-err');
+
+    if (!vaha || !vyska || !vek) { err.textContent = 'Vyplň prosím váhu, výšku a věk.'; return; }
+    if (vaha < 30 || vaha > 250) { err.textContent = 'Váha musí být mezi 30 a 250 kg.'; return; }
+    if (vyska < 130 || vyska > 230) { err.textContent = 'Výška musí být mezi 130 a 230 cm.'; return; }
+    err.textContent = '';
+
+    const bmr = 10 * vaha + 6.25 * vyska - 5 * vek + (pohlavi === 'muz' ? 5 : -161);
+    const tdee = bmr * aktivita;
+    const minKcal = pohlavi === 'zena' ? 1200 : 1500;
+    const cil = Math.max(minKcal, Math.round(tdee - 500));
+
+    dayOffset = 0;
+    userData = { bmr, tdee, cil, vaha };
+    const plan = generatePlan(cil);
+    renderAll(plan, userData);
+});
+
+document.getElementById('shuffle-btn').addEventListener('click', () => {
+    if (!userData) return;
+    dayOffset++;
+    const plan = generatePlan(userData.cil);
+    renderAll(plan, userData);
+});
+</script>
+
+</body>
+</html>
