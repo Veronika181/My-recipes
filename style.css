@@ -166,3 +166,366 @@ nav a:hover {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
 }
+
+/* === NUTRIČNÍ BADGE === */
+.nutrition-badge {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 13px;
+    color: #00eaff;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.nutrition-badge .manual-tag {
+    color: #ffd54f;
+    font-size: 12px;
+}
+
+.nutrition-badge .override-btn {
+    margin-left: auto;
+    padding: 3px 10px;
+    font-size: 12px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.2s;
+    width: auto;
+}
+
+.nutrition-badge .override-btn:hover {
+    background: rgba(255,255,255,0.25);
+    transform: none;
+}
+
+.nutrition-override {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr) auto;
+    gap: 6px;
+    margin-top: 8px;
+    align-items: center;
+}
+
+.nutrition-override input {
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 13px;
+    width: 100%;
+    margin: 0;
+}
+
+.nutrition-override .save-override-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    white-space: nowrap;
+    width: auto;
+}
+
+/* === PROGRESS BARS === */
+.progress-bar {
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    height: 12px;
+    margin: 4px 0 12px 0;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.4s ease;
+}
+
+.progress-fill.kcal    { background: linear-gradient(90deg, #4facfe, #00f2fe); }
+.progress-fill.protein { background: linear-gradient(90deg, #f093fb, #f5576c); }
+.progress-fill.carbs   { background: linear-gradient(90deg, #ffd54f, #ff9800); }
+.progress-fill.fat     { background: linear-gradient(90deg, #8bc34a, #4caf50); }
+.progress-fill.over    { background: #f5576c !important; }
+
+/* === DENNÍ PLÁN === */
+.meal-section {
+    margin-bottom: 30px;
+}
+
+.meal-add-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.meal-add-row select {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.meal-add-row select option {
+    background: #2a2d3e;
+    color: #fff;
+}
+
+.add-recipe-btn {
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    transition: 0.25s;
+    white-space: nowrap;
+}
+
+.add-recipe-btn:hover {
+    background: linear-gradient(135deg, #00f2fe, #4facfe);
+    transform: translateY(-2px);
+}
+
+.meal-list-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+    margin-bottom: 6px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.08);
+    font-size: 14px;
+    gap: 10px;
+}
+
+.meal-list-row .recipe-title {
+    flex: 1;
+}
+
+.meal-list-row .macro-info {
+    color: #00eaff;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.meal-list-row .remove-btn {
+    background: none;
+    border: none;
+    color: #f5576c;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    padding: 0 4px;
+    transition: 0.15s;
+}
+
+.meal-list-row .remove-btn:hover {
+    transform: scale(1.2);
+}
+
+.meal-subtotal {
+    text-align: right;
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    padding-right: 6px;
+    margin-top: 4px;
+}
+
+.macro-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-top: 6px;
+    color: #ccc;
+}
+
+.macro-row span:last-child {
+    color: #fff;
+    font-weight: bold;
+}
+
+.goals-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.goals-grid label {
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+    color: #ccc;
+    gap: 4px;
+}
+
+.goals-grid input {
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 14px;
+    margin: 0;
+    width: 100%;
+}
+
+/* === STAVOVÝ TEXT === */
+.goal-status {
+    text-align: center;
+    font-weight: bold;
+    margin-top: 12px;
+    font-size: 15px;
+    min-height: 22px;
+}
+
+.goal-status.ok    { color: #8bc34a; }
+.goal-status.over  { color: #f5576c; }
+.goal-status.under { color: #ffd54f; }
+
+/* === DATE PICKER === */
+.date-picker-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.date-picker-row label {
+    color: #ccc;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.date-picker-row input[type="date"] {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 15px;
+    backdrop-filter: blur(10px);
+}
+
+/* === NAV === */
+nav {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* === GITHUB SETTINGS === */
+.github-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    user-select: none;
+}
+
+.gh-badge {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.gh-badge-on  { background: #8bc34a; color: #000; }
+.gh-badge-off { background: rgba(255,255,255,0.15); color: #ccc; }
+
+/* === AKCE NA RECEPTU === */
+.recipe-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.delete-btn {
+    background: rgba(245,87,108,0.15);
+    border: 1px solid #f5576c;
+    color: #f5576c;
+    border-radius: 6px;
+    padding: 4px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.delete-btn:hover { background: rgba(245,87,108,0.3); }
+
+.edit-btn {
+    background: rgba(79,172,254,0.15);
+    border: 1px solid #4facfe;
+    color: #4facfe;
+    border-radius: 6px;
+    padding: 4px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.edit-btn:hover { background: rgba(79,172,254,0.3); }
+
+/* === VYHLEDÁVÁNÍ === */
+.search-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.search-container input {
+    max-width: 420px;
+    width: 100%;
+    padding: 12px 18px;
+    border-radius: 30px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 15px;
+    backdrop-filter: blur(10px);
+    outline: none;
+    transition: 0.2s;
+}
+
+.search-container input:focus {
+    border-color: #00eaff;
+    box-shadow: 0 0 12px #00eaff;
+    background: rgba(255,255,255,0.22);
+}
+
+.search-container input::placeholder { color: #ddd; }
+
+/* === RESPONZIVITA === */
+@media (max-width: 600px) {
+    .goals-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .nutrition-override {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .nutrition-override .save-override-btn {
+        grid-column: 1 / -1;
+    }
+    .meal-list-row {
+        flex-wrap: wrap;
+    }
+}
