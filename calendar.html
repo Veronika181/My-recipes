@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>Měsíční přehled</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="page-wrapper">
 
-<h1>Měsíční přehled</h1>
+<h1>📅 Měsíční přehled</h1>
 
 <nav>
-    <a href="index.html">Recepty</a>
-    &nbsp;|&nbsp;
-    <a href="planner.html">Denní plán</a>
-    &nbsp;|&nbsp;
-    <a href="recipe-calculator.html">Kalkulačka</a>
-    &nbsp;|&nbsp;
-    <a href="import-jidelnicek.html">Import</a>
+    <a href="index.html">🍽️ Recepty</a>
+    <a href="planner.html">📋 Denní plán</a>
+    <a href="recipe-calculator.html">🧮 Kalkulačka</a>
+    <a href="import-jidelnicek.html">📥 Import</a>
 </nav>
 
 <div class="form-container">
@@ -42,5 +42,7 @@
 <script src="nutrition.js"></script>
 <script src="github-storage.js"></script>
 <script src="calendar.js"></script>
+</div><!-- end page-wrapper -->
+<script>document.querySelectorAll('nav a').forEach(a => { if (a.getAttribute('href') === location.pathname.split('/').pop()) a.classList.add('active'); });</script>
 </body>
 </html>

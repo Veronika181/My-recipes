@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>Denní plán</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="page-wrapper">
 
-<h1>Denní plán jídel</h1>
+<h1>📋 Denní plán jídel</h1>
 
 <nav>
-    <a href="index.html">Recepty</a>
-    &nbsp;|&nbsp;
-    <a href="recipe-calculator.html">Kalkulačka</a>
-    &nbsp;|&nbsp;
-    <a href="calendar.html">Kalendář</a>
-    &nbsp;|&nbsp;
-    <a href="import-jidelnicek.html">Import</a>
+    <a href="index.html">🍽️ Recepty</a>
+    <a href="recipe-calculator.html">🧮 Kalkulačka</a>
+    <a href="calendar.html">📅 Kalendář</a>
+    <a href="import-jidelnicek.html">📥 Import</a>
 </nav>
 
 <!-- GitHub nastavení -->
@@ -164,5 +164,7 @@
 <script src="nutrition.js"></script>
 <script src="github-storage.js"></script>
 <script src="planner.js"></script>
+</div><!-- end page-wrapper -->
+<script>document.querySelectorAll('nav a').forEach(a => { if (a.getAttribute('href') === location.pathname.split('/').pop()) a.classList.add('active'); });</script>
 </body>
 </html>

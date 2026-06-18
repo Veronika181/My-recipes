@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <title>Kalkulačka receptů</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="page-wrapper">
 
-<h1>Kalkulačka receptů</h1>
+<h1>🧮 Kalkulačka receptů</h1>
 
 <nav>
-    <a href="index.html">Recepty</a>
-    &nbsp;|&nbsp;
-    <a href="planner.html">Denní plán</a>
+    <a href="index.html">🍽️ Recepty</a>
+    <a href="planner.html">📋 Denní plán</a>
 </nav>
 
 <div class="form-container">
@@ -34,5 +36,7 @@ Vejce - 50
 <div id="result"></div>
 
 <script src="calculator.js"></script>
+</div><!-- end page-wrapper -->
+<script>document.querySelectorAll('nav a').forEach(a => { if (a.getAttribute('href') === location.pathname.split('/').pop()) a.classList.add('active'); });</script>
 </body>
 </html>

@@ -1,435 +1,565 @@
-/* === GLOBAL === */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* === RESET & BASE === */
+*, *::before, *::after { box-sizing: border-box; }
+
 body {
-    font-family: Arial, sans-serif;
-    margin: 40px;
-    background: linear-gradient(135deg, #1e1f29, #2a2d3e, #3a3f55);
+    font-family: 'Poppins', Arial, sans-serif;
+    margin: 0;
+    padding: 40px 20px 60px;
+    background: #0d0f1a;
+    background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(79,172,254,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 90% 80%,  rgba(167,139,250,0.08) 0%, transparent 60%),
+        linear-gradient(160deg, #0d0f1a 0%, #131629 50%, #0e1022 100%);
     background-attachment: fixed;
-    color: #fff;
-    transition: 0.3s;
+    color: #e8eaf6;
+    min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); }
+::-webkit-scrollbar-thumb { background: rgba(79,172,254,0.35); border-radius: 3px; }
+
+.page-wrapper {
+    max-width: 1080px;
+    margin: 0 auto;
 }
 
 /* === LIGHT MODE === */
 body.light {
-    background: linear-gradient(135deg, #f0f0f0, #ffffff);
-    color: #222;
+    background: #f0f2fa;
+    background-image: none;
+    color: #1a1d2e;
+}
+body.light .form-container, body.light .recipe {
+    background: rgba(255,255,255,0.9);
+    color: #1a1d2e;
+    border-color: rgba(0,0,0,0.07);
 }
 
-body.light .form-container,
-body.light .recipe {
-    background: rgba(255,255,255,0.8);
-    color: #222;
+/* === NADPISY === */
+h1 {
+    text-align: center;
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #fff 0%, #93c5fd 45%, #c4b5fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 6px;
+    filter: drop-shadow(0 0 24px rgba(147,197,253,0.25));
+}
+
+/* Section h2 na hlavní stránce — oddělující linky */
+.page-wrapper > h2 {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin: 44px 0 18px;
+    text-align: left;
+}
+.page-wrapper > h2::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.12), transparent);
+}
+
+/* h2 uvnitř panelů */
+.form-container h2, .meal-section h2 {
+    text-align: left;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #e0e8ff;
+    letter-spacing: 0.2px;
+    margin: 0 0 18px;
+}
+
+/* === NAV === */
+nav {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 14px 0 36px;
+}
+
+nav a {
+    color: rgba(255,255,255,0.6);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    text-decoration: none;
+    padding: 7px 16px;
+    border-radius: 30px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.05);
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+nav a:hover {
+    color: #fff;
+    background: rgba(79,172,254,0.18);
+    border-color: rgba(79,172,254,0.45);
+    box-shadow: 0 0 16px rgba(79,172,254,0.2);
+    transform: translateY(-1px);
+}
+nav a.active {
+    color: #fff;
+    background: rgba(79,172,254,0.22);
+    border-color: rgba(79,172,254,0.5);
 }
 
 /* === GLASS PANELS === */
 .form-container, .recipe {
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    padding: 20px;
-    margin-bottom: 30px;
-    color: #fff;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-    animation: fadeUp 0.6s ease forwards;
+    background: rgba(255,255,255,0.055);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 22px 24px;
+    margin-bottom: 20px;
+    color: #e8eaf6;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
+    animation: fadeUp 0.45s ease forwards;
     opacity: 0;
+    position: relative;
+    overflow: hidden;
 }
+
+/* Barevný proužek nahoře na form panelech */
+.form-container::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #4facfe 0%, #00f2fe 50%, #a78bfa 100%);
+}
+
+/* Barevné proužky na receptech dle kategorie */
+.recipe::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 18px 18px 0 0;
+}
+#snidane .recipe::before { background: linear-gradient(90deg, #fcd34d, #f59e0b); }
+#obed    .recipe::before { background: linear-gradient(90deg, #fb923c, #ef4444); }
+#svacina .recipe::before { background: linear-gradient(90deg, #86efac, #22c55e); }
+#vecere  .recipe::before { background: linear-gradient(90deg, #60a5fa, #818cf8); }
 
 /* === ANIMACE === */
 @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-/* === HOVER EFEKT === */
+/* === HOVER NA RECEPTU === */
+.recipe {
+    transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
+    cursor: default;
+}
 .recipe:hover {
-    transform: scale(1.02);
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-    transition: 0.25s;
-}
-
-/* === NADPISY === */
-h1, h2 {
-    text-align: center;
-    color: #ffffff;
-    text-shadow: 0 0 12px rgba(255,255,255,0.3);
-}
-
-/* === ODKAZY === */
-nav a {
-    color: #76c7ff;
-    font-weight: bold;
-    text-decoration: none;
-}
-
-nav a:hover {
-    text-decoration: underline;
-}
-
-/* Inputs – lepší kontrast */
-.form-container input,
-.form-container select,
-.form-container textarea {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.35);
-    background: rgba(255,255,255,0.25);
-    color: #fff;
-    font-size: 16px;
-    backdrop-filter: blur(10px);
-    transition: 0.2s;
-}
-
-/* Placeholder – jasnější */
-.form-container input::placeholder,
-.form-container textarea::placeholder {
-    color: #f5f5f5;
-    opacity: 0.9;
-}
-
-/* Focus – ještě lepší viditelnost */
-.form-container input:focus,
-.form-container textarea:focus,
-.form-container select:focus {
-    background: rgba(255,255,255,0.35);
-    border: 1px solid #00eaff;
-    box-shadow: 0 0 12px #00eaff;
-    outline: none;
-}
-
-
-.form-container input:focus,
-.form-container textarea:focus,
-.form-container select:focus {
-    background: rgba(255,255,255,0.25);
-    box-shadow: 0 0 10px #00eaff;
-    outline: none;
-}
-
-.form-container input::placeholder,
-.form-container textarea::placeholder {
-    color: #ddd;
-}
-
-/* === TLAČÍTKO === */
-.form-container button {
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(135deg, #4facfe, #00f2fe);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    box-shadow: 0 4px 12px rgba(0, 242, 254, 0.4);
-    transition: 0.25s;
-}
-
-.form-container button:hover {
-    background: linear-gradient(135deg, #00f2fe, #4facfe);
-    transform: translateY(-2px);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(79,172,254,0.25);
+    border-color: rgba(79,172,254,0.28);
 }
 
 /* === RECEPTY === */
 .recipe h3 {
-    margin: 0 0 5px 0;
+    margin: 0 0 4px;
     color: #fff;
-    font-size: 20px;
-    text-shadow: 0 0 10px rgba(0,255,255,0.3);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
 }
-
 .recipe small {
-    color: #ccc;
+    color: rgba(255,255,255,0.4);
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+.recipe h4 {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin: 16px 0 8px;
+}
+.recipe ul {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.7;
+}
+.recipe p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.7;
+    margin: 0;
 }
 
 /* === BAREVNÉ TAGY === */
 .tag {
     display: inline-block;
-    padding: 4px 10px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: bold;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
     margin-bottom: 10px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
-
-.tag-snidane { background: #ffd54f; color: #000; }
-.tag-obed { background: #ff9800; color: #000; }
-.tag-svacina { background: #8bc34a; color: #000; }
-.tag-vecere { background: #42a5f5; color: #000; }
+.tag-snidane { background: rgba(252,211,77,0.2);  color: #fcd34d; border: 1px solid rgba(252,211,77,0.3); }
+.tag-obed    { background: rgba(251,146,60,0.2);  color: #fb923c; border: 1px solid rgba(251,146,60,0.3); }
+.tag-svacina { background: rgba(134,239,172,0.2); color: #86efac; border: 1px solid rgba(134,239,172,0.3); }
+.tag-vecere  { background: rgba(96,165,250,0.2);  color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); }
 
 /* === GRID LAYOUT === */
 .recipe-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 16px;
 }
 
 /* === NUTRIČNÍ BADGE === */
 .nutrition-badge {
     display: flex;
-    gap: 10px;
+    gap: 6px;
     flex-wrap: wrap;
     align-items: center;
-    font-size: 13px;
-    color: #00eaff;
-    margin-top: 10px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(255,255,255,0.1);
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.08);
 }
-
-.nutrition-badge .manual-tag {
-    color: #ffd54f;
-    font-size: 12px;
-}
-
-.nutrition-badge .override-btn {
-    margin-left: auto;
+.nutrition-badge > span {
+    background: rgba(79,172,254,0.1);
+    border: 1px solid rgba(79,172,254,0.2);
+    border-radius: 20px;
     padding: 3px 10px;
     font-size: 12px;
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 6px;
-    color: #fff;
+    font-weight: 500;
+    color: #93c5fd;
+    white-space: nowrap;
+}
+.nutrition-badge .manual-tag {
+    background: rgba(252,211,77,0.12);
+    border: 1px solid rgba(252,211,77,0.25);
+    color: #fcd34d;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 11px;
+}
+.nutrition-badge .override-btn {
+    margin-left: auto;
+    padding: 3px 12px;
+    font-size: 11px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    color: rgba(255,255,255,0.6);
     cursor: pointer;
     transition: 0.2s;
     width: auto;
+    font-family: 'Poppins', sans-serif;
 }
-
 .nutrition-badge .override-btn:hover {
-    background: rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.14);
+    color: #fff;
     transform: none;
 }
-
 .nutrition-override {
     display: grid;
     grid-template-columns: repeat(4, 1fr) auto;
     gap: 6px;
-    margin-top: 8px;
+    margin-top: 10px;
     align-items: center;
 }
-
 .nutrition-override input {
-    padding: 6px;
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.25);
-    background: rgba(255,255,255,0.15);
+    padding: 7px 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.08);
     color: #fff;
     font-size: 13px;
+    font-family: 'Poppins', sans-serif;
     width: 100%;
     margin: 0;
 }
-
 .nutrition-override .save-override-btn {
-    padding: 6px 12px;
-    font-size: 13px;
+    padding: 7px 14px;
+    font-size: 12px;
     background: linear-gradient(135deg, #4facfe, #00f2fe);
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     color: #fff;
     cursor: pointer;
     white-space: nowrap;
     width: auto;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
 }
 
-/* === PROGRESS BARS === */
-.progress-bar {
-    background: rgba(255,255,255,0.1);
-    border-radius: 8px;
-    height: 12px;
-    margin: 4px 0 12px 0;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    border-radius: 8px;
-    transition: width 0.4s ease;
-}
-
-.progress-fill.kcal    { background: linear-gradient(90deg, #4facfe, #00f2fe); }
-.progress-fill.protein { background: linear-gradient(90deg, #f093fb, #f5576c); }
-.progress-fill.carbs   { background: linear-gradient(90deg, #ffd54f, #ff9800); }
-.progress-fill.fat     { background: linear-gradient(90deg, #8bc34a, #4caf50); }
-.progress-fill.over    { background: #f5576c !important; }
-
-/* === DENNÍ PLÁN === */
-.meal-section {
-    margin-bottom: 30px;
-}
-
-.meal-add-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
-    align-items: center;
-}
-
-.meal-add-row select {
-    flex: 1;
-    padding: 10px;
+/* === INPUTS === */
+.form-container input,
+.form-container select,
+.form-container textarea {
+    width: 100%;
+    padding: 11px 14px;
+    margin: 8px 0;
     border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.15);
-    color: #fff;
-    font-size: 15px;
-    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.07);
+    color: #e8eaf6;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+    backdrop-filter: blur(8px);
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    outline: none;
+}
+.form-container input::placeholder,
+.form-container textarea::placeholder {
+    color: rgba(255,255,255,0.3);
+}
+.form-container input:focus,
+.form-container textarea:focus,
+.form-container select:focus {
+    border-color: rgba(79,172,254,0.6);
+    box-shadow: 0 0 0 3px rgba(79,172,254,0.12);
+    background: rgba(255,255,255,0.1);
+}
+.form-container select option {
+    background: #1a1d2e;
+    color: #e8eaf6;
 }
 
-.meal-add-row select option {
-    background: #2a2d3e;
-    color: #fff;
-}
-
-.add-recipe-btn {
-    padding: 10px 18px;
-    background: linear-gradient(135deg, #4facfe, #00f2fe);
+/* === TLAČÍTKA === */
+.form-container button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
     color: white;
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    font-size: 15px;
-    font-weight: bold;
-    transition: 0.25s;
-    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 16px rgba(37,99,235,0.35);
+    transition: all 0.2s;
 }
-
-.add-recipe-btn:hover {
-    background: linear-gradient(135deg, #00f2fe, #4facfe);
+.form-container button:hover {
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37,99,235,0.45);
+}
+.form-container button:active { transform: translateY(0); }
+
+/* === PROGRESS BARS === */
+.progress-bar {
+    background: rgba(255,255,255,0.07);
+    border-radius: 8px;
+    height: 8px;
+    margin: 5px 0 14px;
+    overflow: hidden;
+}
+.progress-fill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+.progress-fill.kcal    { background: linear-gradient(90deg, #3b82f6, #06b6d4); }
+.progress-fill.protein { background: linear-gradient(90deg, #ec4899, #f43f5e); }
+.progress-fill.carbs   { background: linear-gradient(90deg, #f59e0b, #f97316); }
+.progress-fill.fat     { background: linear-gradient(90deg, #22c55e, #16a34a); }
+.progress-fill.over    { background: #ef4444 !important; }
+
+/* === DENNÍ PLÁN === */
+.meal-section { margin-bottom: 0; }
+
+.meal-add-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+.meal-add-row select {
+    flex: 1;
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.07);
+    color: #e8eaf6;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+    backdrop-filter: blur(8px);
+    outline: none;
+    transition: 0.2s;
+}
+.meal-add-row select:focus {
+    border-color: rgba(79,172,254,0.5);
+    box-shadow: 0 0 0 3px rgba(79,172,254,0.1);
+}
+.meal-add-row select option { background: #1a1d2e; }
+
+.add-recipe-btn {
+    padding: 9px 18px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.2s;
+    white-space: nowrap;
+    box-shadow: 0 3px 12px rgba(37,99,235,0.3);
+}
+.add-recipe-btn:hover {
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    transform: translateY(-1px);
 }
 
 .meal-list-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 14px;
-    margin-bottom: 6px;
+    padding: 9px 14px;
+    margin-bottom: 5px;
     border-radius: 10px;
-    background: rgba(255,255,255,0.08);
-    font-size: 14px;
-    gap: 10px;
-}
-
-.meal-list-row .recipe-title {
-    flex: 1;
-}
-
-.meal-list-row .macro-info {
-    color: #00eaff;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.06);
     font-size: 13px;
+    gap: 10px;
+    transition: background 0.15s;
+}
+.meal-list-row:hover { background: rgba(255,255,255,0.08); }
+.meal-list-row .recipe-title { flex: 1; font-weight: 500; }
+.meal-list-row .macro-info {
+    color: #93c5fd;
+    font-size: 12px;
     white-space: nowrap;
 }
-
 .meal-list-row .remove-btn {
     background: none;
     border: none;
-    color: #f5576c;
+    color: rgba(239,68,68,0.7);
     cursor: pointer;
-    font-size: 20px;
+    font-size: 18px;
     line-height: 1;
     padding: 0 4px;
     transition: 0.15s;
 }
-
 .meal-list-row .remove-btn:hover {
+    color: #ef4444;
     transform: scale(1.2);
 }
 
 .meal-subtotal {
     text-align: right;
-    font-size: 13px;
-    color: rgba(255,255,255,0.5);
-    padding-right: 6px;
-    margin-top: 4px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    padding-right: 4px;
+    margin-top: 6px;
 }
 
 .macro-row {
     display: flex;
     justify-content: space-between;
-    font-size: 14px;
+    font-size: 13px;
     margin-top: 6px;
-    color: #ccc;
+    color: rgba(255,255,255,0.5);
 }
-
 .macro-row span:last-child {
-    color: #fff;
-    font-weight: bold;
+    color: #e8eaf6;
+    font-weight: 600;
 }
 
 .goals-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
-
 .goals-grid label {
     display: flex;
     flex-direction: column;
-    font-size: 13px;
-    color: #ccc;
-    gap: 4px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.45);
+    gap: 5px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
 }
-
 .goals-grid input {
-    padding: 8px;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.15);
-    color: #fff;
+    padding: 9px;
+    border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.07);
+    color: #e8eaf6;
     font-size: 14px;
+    font-family: 'Poppins', sans-serif;
     margin: 0;
     width: 100%;
+    outline: none;
+    transition: 0.2s;
+}
+.goals-grid input:focus {
+    border-color: rgba(79,172,254,0.5);
+    box-shadow: 0 0 0 3px rgba(79,172,254,0.1);
 }
 
 /* === STAVOVÝ TEXT === */
 .goal-status {
     text-align: center;
-    font-weight: bold;
-    margin-top: 12px;
-    font-size: 15px;
+    font-weight: 600;
+    margin-top: 14px;
+    font-size: 14px;
     min-height: 22px;
+    letter-spacing: 0.2px;
 }
-
-.goal-status.ok    { color: #8bc34a; }
-.goal-status.over  { color: #f5576c; }
-.goal-status.under { color: #ffd54f; }
+.goal-status.ok    { color: #86efac; }
+.goal-status.over  { color: #f87171; }
+.goal-status.under { color: #fcd34d; }
 
 /* === DATE PICKER === */
 .date-picker-row {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 14px 20px;
+    padding: 12px 20px;
     margin-bottom: 20px;
     justify-content: center;
 }
-
 .date-picker-row label {
-    color: #ccc;
-    font-size: 15px;
+    color: rgba(255,255,255,0.5);
+    font-size: 14px;
     display: flex;
     align-items: center;
     gap: 10px;
 }
-
 .date-picker-row input[type="date"] {
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.15);
-    color: #fff;
-    font-size: 15px;
-    backdrop-filter: blur(10px);
-}
-
-/* === NAV === */
-nav {
-    text-align: center;
-    margin-bottom: 20px;
+    padding: 8px 14px;
+    border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.08);
+    color: #e8eaf6;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+    outline: none;
 }
 
 /* === GITHUB SETTINGS === */
@@ -437,20 +567,20 @@ nav {
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 15px;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: 600;
     user-select: none;
+    color: rgba(255,255,255,0.7);
 }
-
 .gh-badge {
     padding: 3px 10px;
     border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
 }
-
-.gh-badge-on  { background: #8bc34a; color: #000; }
-.gh-badge-off { background: rgba(255,255,255,0.15); color: #ccc; }
+.gh-badge-on  { background: rgba(134,239,172,0.2); color: #86efac; border: 1px solid rgba(134,239,172,0.3); }
+.gh-badge-off { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.12); }
 
 /* === NÁKUPNÍ SEZNAM === */
 .shopping-list {
@@ -458,277 +588,257 @@ nav {
     padding: 0;
     margin: 0;
 }
-
 .shopping-item {
-    padding: 8px 12px;
-    margin-bottom: 6px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.08);
+    padding: 9px 14px;
+    margin-bottom: 5px;
+    border-radius: 9px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.06);
     transition: 0.2s;
 }
-
+.shopping-item:hover { background: rgba(255,255,255,0.08); }
 .shopping-item label {
     display: flex;
     align-items: center;
     gap: 10px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 500;
 }
-
 .shopping-item input[type="checkbox"] {
     width: 16px;
     height: 16px;
     cursor: pointer;
-    accent-color: #4facfe;
+    accent-color: #3b82f6;
     flex-shrink: 0;
 }
-
 .shopping-item.checked {
-    opacity: 0.45;
-    text-decoration: line-through;
+    opacity: 0.35;
 }
-
-.share-btn {
-    background: rgba(139,195,74,0.15);
-    border: 1px solid #8bc34a;
-    color: #8bc34a;
-    border-radius: 6px;
-    padding: 4px 12px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: 0.2s;
-}
-
-.share-btn:hover { background: rgba(139,195,74,0.3); }
-
-/* === MODAL SDÍLENÍ === */
-.share-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 20px;
-}
-
-.share-modal-box {
-    background: linear-gradient(135deg, #2a2d3e, #3a3f55);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 16px;
-    padding: 28px;
-    max-width: 540px;
-    width: 100%;
-    max-height: 85vh;
-    overflow-y: auto;
-    position: relative;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-}
-
-.share-modal-close {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    background: rgba(255,255,255,0.1);
-    border: none;
-    color: #fff;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.2s;
-}
-
-.share-modal-close:hover { background: rgba(255,255,255,0.25); }
+.shopping-item.checked label { text-decoration: line-through; }
 
 /* === AKCE NA RECEPTU === */
 .recipe-actions {
     display: flex;
     gap: 6px;
     justify-content: flex-end;
-    margin-top: 10px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.07);
 }
+.share-btn {
+    background: rgba(134,239,172,0.1);
+    border: 1px solid rgba(134,239,172,0.25);
+    color: #86efac;
+    border-radius: 8px;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    transition: 0.2s;
+}
+.share-btn:hover { background: rgba(134,239,172,0.2); }
 
 .delete-btn {
-    background: rgba(245,87,108,0.15);
-    border: 1px solid #f5576c;
-    color: #f5576c;
-    border-radius: 6px;
-    padding: 4px 12px;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.25);
+    color: #f87171;
+    border-radius: 8px;
+    padding: 5px 12px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
     transition: 0.2s;
 }
-
-.delete-btn:hover { background: rgba(245,87,108,0.3); }
+.delete-btn:hover { background: rgba(239,68,68,0.2); }
 
 .edit-btn {
-    background: rgba(79,172,254,0.15);
-    border: 1px solid #4facfe;
-    color: #4facfe;
-    border-radius: 6px;
-    padding: 4px 12px;
+    background: rgba(79,172,254,0.1);
+    border: 1px solid rgba(79,172,254,0.25);
+    color: #93c5fd;
+    border-radius: 8px;
+    padding: 5px 12px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
     transition: 0.2s;
 }
-
-.edit-btn:hover { background: rgba(79,172,254,0.3); }
+.edit-btn:hover { background: rgba(79,172,254,0.2); }
 
 /* === VYHLEDÁVÁNÍ === */
 .search-container {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
-
 .search-container input {
-    max-width: 420px;
+    max-width: 440px;
     width: 100%;
-    padding: 12px 18px;
+    padding: 12px 20px;
     border-radius: 30px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.15);
-    color: #fff;
-    font-size: 15px;
-    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.06);
+    color: #e8eaf6;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+    backdrop-filter: blur(12px);
     outline: none;
     transition: 0.2s;
 }
-
 .search-container input:focus {
-    border-color: #00eaff;
-    box-shadow: 0 0 12px #00eaff;
-    background: rgba(255,255,255,0.22);
+    border-color: rgba(79,172,254,0.5);
+    box-shadow: 0 0 0 3px rgba(79,172,254,0.1);
+    background: rgba(255,255,255,0.09);
 }
+.search-container input::placeholder { color: rgba(255,255,255,0.3); }
 
-.search-container input::placeholder { color: #ddd; }
+/* === MODAL SDÍLENÍ === */
+.share-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+.share-modal-box {
+    background: #1a1d2e;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 18px;
+    padding: 28px;
+    max-width: 540px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+}
+.share-modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.7);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+.share-modal-close:hover {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+}
 
 /* === MĚSÍČNÍ KALENDÁŘ === */
 .cal-nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
 }
-
 .cal-legend {
     display: flex;
     gap: 16px;
     font-size: 12px;
-    color: #ccc;
-    margin-bottom: 12px;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 14px;
     align-items: center;
     flex-wrap: wrap;
 }
-
 .cal-dot {
     display: inline-block;
-    width: 10px;
-    height: 10px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
-    margin-right: 4px;
+    margin-right: 5px;
 }
-
-.cal-dot.cal-ok    { background: #8bc34a; }
-.cal-dot.cal-over  { background: #f5576c; }
-.cal-dot.cal-under { background: #ffd54f; }
-.cal-dot.cal-empty { background: rgba(255,255,255,0.2); }
+.cal-dot.cal-ok    { background: #86efac; }
+.cal-dot.cal-over  { background: #f87171; }
+.cal-dot.cal-under { background: #fcd34d; }
+.cal-dot.cal-empty { background: rgba(255,255,255,0.18); }
 
 .cal-header {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     text-align: center;
-    font-size: 12px;
-    color: #aaa;
-    margin-bottom: 6px;
-    font-weight: bold;
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 8px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
-
 .cal-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
+    gap: 5px;
 }
-
 .cal-cell {
-    background: rgba(255,255,255,0.07);
+    background: rgba(255,255,255,0.04);
     border-radius: 10px;
     padding: 8px 6px;
-    min-height: 72px;
+    min-height: 70px;
     cursor: pointer;
     transition: 0.2s;
     border: 1px solid transparent;
 }
-
 .cal-cell:hover {
-    background: rgba(255,255,255,0.15);
-    border-color: rgba(0,234,255,0.3);
+    background: rgba(79,172,254,0.1);
+    border-color: rgba(79,172,254,0.25);
 }
-
 .cal-cell.cal-dnes {
-    border-color: #00eaff;
-    box-shadow: 0 0 8px rgba(0,234,255,0.3);
+    border-color: rgba(79,172,254,0.5);
+    box-shadow: 0 0 0 1px rgba(79,172,254,0.25);
 }
-
 .cal-empty-cell {
     background: transparent;
     cursor: default;
     border: none;
-    min-height: 72px;
+    min-height: 70px;
 }
-
 .cal-den {
-    font-size: 13px;
-    font-weight: bold;
-    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.8);
     margin-bottom: 4px;
 }
-
 .cal-kcal {
-    font-size: 11px;
+    font-size: 10px;
     border-radius: 4px;
-    padding: 1px 4px;
+    padding: 1px 5px;
     display: inline-block;
     margin-bottom: 4px;
+    font-weight: 500;
 }
-
-.cal-stav-ok    { background: rgba(139,195,74,0.25);  color: #8bc34a; }
-.cal-stav-over  { background: rgba(245,87,108,0.25);  color: #f5576c; }
-.cal-stav-under { background: rgba(255,213,79,0.25);  color: #ffd54f; }
-.cal-stav-empty { color: #666; }
-
-.cal-meal-dot {
-    font-size: 13px;
-    margin-right: 2px;
-}
-
-@media (max-width: 600px) {
-    .cal-cell { min-height: 54px; padding: 5px 3px; }
-    .cal-kcal { font-size: 9px; }
-    .cal-den  { font-size: 11px; }
-    .cal-meal-dot { font-size: 10px; }
-    .cal-nav button { padding: 6px 10px; font-size: 13px; }
-}
-
-/* === MĚSÍČNÍ KALENDÁŘ KONEC === */
+.cal-stav-ok    { background: rgba(134,239,172,0.18); color: #86efac; }
+.cal-stav-over  { background: rgba(248,113,113,0.18); color: #f87171; }
+.cal-stav-under { background: rgba(252,211,77,0.18);  color: #fcd34d; }
+.cal-stav-empty { color: rgba(255,255,255,0.2); }
+.cal-meal-dot { font-size: 12px; margin-right: 2px; }
 
 /* === RESPONZIVITA === */
-@media (max-width: 600px) {
-    .goals-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .nutrition-override {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .nutrition-override .save-override-btn {
-        grid-column: 1 / -1;
-    }
-    .meal-list-row {
-        flex-wrap: wrap;
-    }
+@media (max-width: 700px) {
+    body { padding: 24px 14px 40px; }
+    h1 { font-size: 1.7rem; }
+    .goals-grid { grid-template-columns: repeat(2, 1fr); }
+    .nutrition-override { grid-template-columns: repeat(2, 1fr); }
+    .nutrition-override .save-override-btn { grid-column: 1 / -1; }
+    .meal-list-row { flex-wrap: wrap; }
+    .cal-cell { min-height: 52px; padding: 5px 3px; }
+    .cal-kcal { font-size: 9px; }
+    .cal-den  { font-size: 10px; }
+    .cal-meal-dot { font-size: 9px; }
+    .cal-nav button { padding: 6px 10px; font-size: 12px; }
+    nav a { font-size: 12px; padding: 6px 12px; }
 }
