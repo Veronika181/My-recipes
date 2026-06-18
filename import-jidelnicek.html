@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import jídelníčku</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Import jídelníčku</h1>
+
+<nav>
+    <a href="index.html">Recepty</a>
+    &nbsp;|&nbsp;
+    <a href="planner.html">Denní plán</a>
+    &nbsp;|&nbsp;
+    <a href="calendar.html">Kalendář</a>
+</nav>
+
+<div class="form-container">
+    <h2>Jídelníček 8.7. – 20.7.2024</h2>
+    <p style="font-size:13px; color:#ccc; margin-bottom:16px">
+        Importuje jídelní plán z Kalorických tabulek (7 dní). Přidá jídla jako recepty a vyplní plán pro každý den.
+    </p>
+    <button id="import-btn">⬇️ Importovat jídelníček</button>
+    <p id="import-msg" style="margin-top:12px; font-size:14px; min-height:20px"></p>
+</div>
+
+<div class="form-container" id="preview" style="display:none">
+    <h2>Přehled importovaných dní</h2>
+    <div id="preview-list"></div>
+</div>
+
+<script>
+const DNY = ["Pondělí 8.7.","Středa 10.7.","Pátek 12.7.","Neděle 14.7.","Úterý 16.7.","Čtvrtek 18.7.","Sobota 20.7."];
+
+const DATA = {
+  recepty: [
+    // === PONDĚLÍ 8.7.2024 ===
+    { title:"Snídaně 8.7.", category:"snidane",
+      ingredients:["selský jogurt bílý 3,8% tuku Hollandia: 200 g","Cornflakes Bonavita: 30 g","banán: 100 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Pondělí 08.07.2024",
+      nutrition:{kcal:345,protein:22,carbs:36,fat:12,manual:true,unmatched:[]} },
+    { title:"Svačina dop. 8.7.", category:"svacina",
+      ingredients:["BeBe Dobré ráno kakaové Opavia: 30 g","nektarinka: 100 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Pondělí 08.07.2024",
+      nutrition:{kcal:171,protein:11,carbs:18,fat:6,manual:true,unmatched:[]} },
+    { title:"Oběd 8.7.", category:"obed",
+      ingredients:["těstoviny vařené: 130 g","hovězí zadní vařené: 150 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Pondělí 08.07.2024",
+      nutrition:{kcal:452,protein:29,carbs:47,fat:16,manual:true,unmatched:[]} },
+    { title:"Svačina odp. 8.7.", category:"svacina",
+      ingredients:["jahody: 150 g","Tvaroh měkký Clever: 100 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Pondělí 08.07.2024",
+      nutrition:{kcal:119,protein:8,carbs:12,fat:4,manual:true,unmatched:[]} },
+    { title:"Večeře 8.7.", category:"vecere",
+      ingredients:["vejce slepičí: 55 g","Lučina Linie: 20 g","eidam sýr 30% tuku plátkový: 34 g","Krůtí prsní šunka 92% masa Pikok: 50 g","Lámankový chléb vícezrnný: 55 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Pondělí 08.07.2024",
+      nutrition:{kcal:385,protein:25,carbs:40,fat:13,manual:true,unmatched:[]} },
+
+    // === STŘEDA 10.7.2024 ===
+    { title:"Snídaně 10.7.", category:"snidane",
+      ingredients:["krůtí šunka Pikok: 50 g","lámankový vícezrnný chléb krájený Odkolek: 80 g","Gervais FitProtein: 40 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Středa 10.07.2024",
+      nutrition:{kcal:321,protein:24,carbs:36,fat:8,manual:true,unmatched:[]} },
+    { title:"Svačina dop. 10.7.", category:"svacina",
+      ingredients:["Jihočeský tvaroh odtučněný Madeta: 125 g","nektarinka: 100 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Středa 10.07.2024",
+      nutrition:{kcal:120,protein:9,carbs:13,fat:3,manual:true,unmatched:[]} },
+    { title:"Oběd 10.7.", category:"obed",
+      ingredients:["aljašská treska filety: 200 g","brambory vařené bez slupky: 150 g","máslo: 5 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Středa 10.07.2024",
+      nutrition:{kcal:293,protein:22,carbs:32,fat:7,manual:true,unmatched:[]} },
+    { title:"Svačina odp. 10.7.", category:"svacina",
+      ingredients:["Bebe Dobré ráno oříškové s medem Opavia: 25 g","nektarinka: 100 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Středa 10.07.2024",
+      nutrition:{kcal:153,protein:11,carbs:17,fat:4,manual:true,unmatched:[]} },
+    { title:"Večeře 10.7.", category:"vecere",
+      ingredients:["eidam sýr 30% tuku plátkový: 68 g","Lučina Linie: 10 g","lámankový vícezrnný chléb krájený Odkolek: 100 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Středa 10.07.2024",
+      nutrition:{kcal:455,protein:34,carbs:50,fat:12,manual:true,unmatched:[]} },
+
+    // === PÁTEK 12.7.2024 ===
+    { title:"Snídaně 12.7.", category:"snidane",
+      ingredients:["selský jogurt bílý 3,8% tuku Hollandia: 200 g","Cornflakes Bonavita: 30 g","jahody: 150 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Pátek 12.07.2024",
+      nutrition:{kcal:302,protein:22,carbs:30,fat:10,manual:true,unmatched:[]} },
+    { title:"Svačina dop. 12.7.", category:"svacina",
+      ingredients:["Bebe Dobré ráno oříškové s medem Opavia: 30 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Pátek 12.07.2024",
+      nutrition:{kcal:134,protein:10,carbs:13,fat:4,manual:true,unmatched:[]} },
+    { title:"Oběd 12.7.", category:"obed",
+      ingredients:["brambory vařené bez slupky: 150 g","máslo: 5 g","krůtí prsa restovaná: 150 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Pátek 12.07.2024",
+      nutrition:{kcal:408,protein:30,carbs:40,fat:13,manual:true,unmatched:[]} },
+    { title:"Svačina odp. 12.7.", category:"svacina",
+      ingredients:["nektarinka: 100 g","Jihočeský tvaroh polotučný Madeta: 125 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Pátek 12.07.2024",
+      nutrition:{kcal:159,protein:12,carbs:16,fat:5,manual:true,unmatched:[]} },
+    { title:"Večeře 12.7.", category:"vecere",
+      ingredients:["Krůtí prsní šunka 92% masa Pikok: 50 g","Lamankový chlieb Penam: 80 g","mozzarela light Tesco: 100 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Pátek 12.07.2024",
+      nutrition:{kcal:430,protein:31,carbs:42,fat:14,manual:true,unmatched:[]} },
+
+    // === NEDĚLE 14.7.2024 ===
+    { title:"Snídaně 14.7.", category:"snidane",
+      ingredients:["Lamankový chlieb Penam: 60 g","volské oko sázené vejce: 100 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Neděle 14.07.2024",
+      nutrition:{kcal:357,protein:27,carbs:36,fat:11,manual:true,unmatched:[]} },
+    { title:"Svačina dop. 14.7.", category:"svacina",
+      ingredients:["nektarinka: 100 g","tvaroh měkký nízkotučný 0,5% tuku Milko: 100 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Neděle 14.07.2024",
+      nutrition:{kcal:108,protein:8,carbs:11,fat:3,manual:true,unmatched:[]} },
+    { title:"Oběd 14.7.", category:"obed",
+      ingredients:["vepřová panenka restovaná: 150 g","špenát baby: 120 g","bramborové noky: 150 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Neděle 14.07.2024",
+      nutrition:{kcal:491,protein:37,carbs:50,fat:15,manual:true,unmatched:[]} },
+    { title:"Svačina odp. 14.7.", category:"svacina",
+      ingredients:["BeBe čokoládové bez ořechů s medem: 40 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Neděle 14.07.2024",
+      nutrition:{kcal:181,protein:14,carbs:18,fat:5,manual:true,unmatched:[]} },
+    { title:"Večeře 14.7.", category:"vecere",
+      ingredients:["Lamankový chlieb Penam: 55 g","Gervais FitProtein: 15 g","Olomoucké tvarůžky malé A.W.: 70 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Neděle 14.07.2024",
+      nutrition:{kcal:261,protein:20,carbs:26,fat:8,manual:true,unmatched:[]} },
+
+    // === ÚTERÝ 16.7.2024 ===
+    { title:"Snídaně 16.7.", category:"snidane",
+      ingredients:["Cornflakes Bonavita: 30 g","jahody: 150 g","selský jogurt bílý 3,8% tuku Hollandia: 200 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Úterý 16.07.2024",
+      nutrition:{kcal:302,protein:19,carbs:33,fat:10,manual:true,unmatched:[]} },
+    { title:"Svačina dop. 16.7.", category:"svacina",
+      ingredients:["kefírové mléko nízkotučné bílé Valašské Meziříčí: 250 g","nektarinka: 100 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Úterý 16.07.2024",
+      nutrition:{kcal:139,protein:9,carbs:15,fat:4,manual:true,unmatched:[]} },
+    { title:"Oběd 16.7.", category:"obed",
+      ingredients:["vejce slepičí: 110 g","eidam sýr 30% tuku plátkový: 51 g","kuřecí prsní šunka 92% masa Pikok: 48 g","hrášek mražený: 50 g","brambory vařené bez slupky: 150 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Úterý 16.07.2024",
+      nutrition:{kcal:523,protein:33,carbs:57,fat:17,manual:true,unmatched:[]} },
+    { title:"Svačina odp. 16.7.", category:"svacina",
+      ingredients:["Bebe Dobré ráno oříškové s medem Opavia: 30 g","meloun vodní: 200 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Úterý 16.07.2024",
+      nutrition:{kcal:193,protein:12,carbs:21,fat:6,manual:true,unmatched:[]} },
+    { title:"Večeře 16.7.", category:"vecere",
+      ingredients:["Gervais FitProtein: 20 g","tunák rio mare s kapkou olivového oleje: 70 g","lámankový vícezrnný chléb krájený Odkolek: 55 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Úterý 16.07.2024",
+      nutrition:{kcal:291,protein:18,carbs:32,fat:9,manual:true,unmatched:[]} },
+
+    // === ČTVRTEK 18.7.2024 ===
+    { title:"Snídaně 18.7.", category:"snidane",
+      ingredients:["Lamankový chlieb Penam: 50 g","Lučina Linie: 20 g","eidam sýr 30% tuku plátkový: 34 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Čtvrtek 18.07.2024",
+      nutrition:{kcal:261,protein:20,carbs:21,fat:10,manual:true,unmatched:[]} },
+    { title:"Svačina dop. 18.7.", category:"svacina",
+      ingredients:["Bebe Dobré ráno oříškové s medem Opavia: 30 g","broskev: 50 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Čtvrtek 18.07.2024",
+      nutrition:{kcal:157,protein:12,carbs:13,fat:6,manual:true,unmatched:[]} },
+    { title:"Oběd 18.7.", category:"obed",
+      ingredients:["kuřecí prsa restovaná: 150 g","paprika červená: 50 g","rajčata: 50 g","lámankový vícezrnný chléb krájený Odkolek: 34 g","Gold Zlatá kukuřice Bonduelle: 20 g","vejce slepičí: 55 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Čtvrtek 18.07.2024",
+      nutrition:{kcal:494,protein:37,carbs:41,fat:19,manual:true,unmatched:[]} },
+    { title:"Svačina odp. 18.7.", category:"svacina",
+      ingredients:["kefírové mléko nízkotučné bílé Valašské Meziříčí: 250 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Čtvrtek 18.07.2024",
+      nutrition:{kcal:99,protein:7,carbs:8,fat:4,manual:true,unmatched:[]} },
+    { title:"Večeře 18.7.", category:"vecere",
+      ingredients:["lámankový vícezrnný chléb krájený Odkolek: 60 g","Mozarella Albert: 80 g","rajčata cherry: 50 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Čtvrtek 18.07.2024",
+      nutrition:{kcal:338,protein:25,carbs:28,fat:13,manual:true,unmatched:[]} },
+
+    // === SOBOTA 20.7.2024 ===
+    { title:"Snídaně 20.7.", category:"snidane",
+      ingredients:["lámankový vícezrnný chléb krájený Odkolek: 80 g","eidam sýr 30% tuku plátkový: 34 g","Gervais FitProtein: 100 g","Krůtí prsní šunka 92% masa Pikok: 60 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Sobota 20.07.2024",
+      nutrition:{kcal:493,protein:36,carbs:52,fat:15,manual:true,unmatched:[]} },
+    { title:"Svačina dop. 20.7.", category:"svacina",
+      ingredients:["Ovofit tvarohový dezert jahodový Milko: 140 g","jablko: 100 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Sobota 20.07.2024",
+      nutrition:{kcal:161,protein:12,carbs:17,fat:5,manual:true,unmatched:[]} },
+    { title:"Oběd 20.7.", category:"obed",
+      ingredients:["rýže bílá dlouhozrnná vařená: 140 g","pečené kuřecí stehno s kostí: 150 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Sobota 20.07.2024",
+      nutrition:{kcal:370,protein:27,carbs:39,fat:11,manual:true,unmatched:[]} },
+    { title:"Svačina odp. 20.7.", category:"svacina",
+      ingredients:["broskev: 100 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Sobota 20.07.2024",
+      nutrition:{kcal:46,protein:3,carbs:5,fat:1,manual:true,unmatched:[]} },
+    { title:"Večeře 20.7.", category:"vecere",
+      ingredients:["Lamankový chlieb Penam: 80 g","vejce slepičí: 55 g","Krůtí prsní šunka Albert: 50 g"],
+      instructions:"Jídelníček Kalorické Tabulky – Sobota 20.07.2024",
+      nutrition:{kcal:346,protein:25,carbs:36,fat:10,manual:true,unmatched:[]} }
+  ],
+
+  plan: {
+    "2024-07-08": { snidane:["Snídaně 8.7."], obed:["Oběd 8.7."], svacina:["Svačina dop. 8.7.","Svačina odp. 8.7."], vecere:["Večeře 8.7."] },
+    "2024-07-10": { snidane:["Snídaně 10.7."], obed:["Oběd 10.7."], svacina:["Svačina dop. 10.7.","Svačina odp. 10.7."], vecere:["Večeře 10.7."] },
+    "2024-07-12": { snidane:["Snídaně 12.7."], obed:["Oběd 12.7."], svacina:["Svačina dop. 12.7.","Svačina odp. 12.7."], vecere:["Večeře 12.7."] },
+    "2024-07-14": { snidane:["Snídaně 14.7."], obed:["Oběd 14.7."], svacina:["Svačina dop. 14.7.","Svačina odp. 14.7."], vecere:["Večeře 14.7."] },
+    "2024-07-16": { snidane:["Snídaně 16.7."], obed:["Oběd 16.7."], svacina:["Svačina dop. 16.7.","Svačina odp. 16.7."], vecere:["Večeře 16.7."] },
+    "2024-07-18": { snidane:["Snídaně 18.7."], obed:["Oběd 18.7."], svacina:["Svačina dop. 18.7.","Svačina odp. 18.7."], vecere:["Večeře 18.7."] },
+    "2024-07-20": { snidane:["Snídaně 20.7."], obed:["Oběd 20.7."], svacina:["Svačina dop. 20.7.","Svačina odp. 20.7."], vecere:["Večeře 20.7."] }
+  }
+};
+
+document.getElementById("import-btn").addEventListener("click", () => {
+    const existing = JSON.parse(localStorage.getItem("recepty") || "[]");
+    const existingTitles = new Set(existing.map(r => r.title));
+    const newRecipes = DATA.recepty.filter(r => !existingTitles.has(r.title));
+    localStorage.setItem("recepty", JSON.stringify([...existing, ...newRecipes]));
+
+    const existingPlan = JSON.parse(localStorage.getItem("denni_plan") || "{}");
+    Object.assign(existingPlan, DATA.plan);
+    localStorage.setItem("denni_plan", JSON.stringify(existingPlan));
+
+    const msg = document.getElementById("import-msg");
+    msg.style.color = "#8bc34a";
+    msg.textContent = `✓ Importováno ${newRecipes.length} jídel a ${Object.keys(DATA.plan).length} dní.`;
+
+    // Zobraz přehled
+    const preview = document.getElementById("preview");
+    const list = document.getElementById("preview-list");
+    preview.style.display = "block";
+    list.innerHTML = Object.entries(DATA.plan).map(([datum, den]) => {
+        const d = new Date(datum);
+        const denTydne = ["Ne","Po","Út","St","Čt","Pá","So"][d.getDay()];
+        const kcal = DATA.recepty.filter(r =>
+            [...den.snidane,...den.obed,...den.svacina,...den.vecere].includes(r.title)
+        ).reduce((s, r) => s + r.nutrition.kcal, 0);
+        return `<div class="meal-list-row">
+            <span class="recipe-title"><strong>${denTydne} ${datum.slice(8)}.${datum.slice(5,7)}.</strong></span>
+            <span class="macro-info">⚡ ${kcal} kcal</span>
+            <a href="planner.html?datum=${datum}" style="color:#4facfe; font-size:13px">Otevřít →</a>
+        </div>`;
+    }).join("");
+});
+</script>
+</body>
+</html>

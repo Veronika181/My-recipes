@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Měsíční přehled</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Měsíční přehled</h1>
+
+<nav>
+    <a href="index.html">Recepty</a>
+    &nbsp;|&nbsp;
+    <a href="planner.html">Denní plán</a>
+    &nbsp;|&nbsp;
+    <a href="recipe-calculator.html">Kalkulačka</a>
+    &nbsp;|&nbsp;
+    <a href="import-jidelnicek.html">Import</a>
+</nav>
+
+<div class="form-container">
+    <div class="cal-nav">
+        <button id="prev-month-btn" style="width:auto; padding:8px 18px">&#8592; Předchozí</button>
+        <h2 id="month-label" style="margin:0; text-shadow:none"></h2>
+        <button id="next-month-btn" style="width:auto; padding:8px 18px">Následující &#8594;</button>
+    </div>
+
+    <div class="cal-legend">
+        <span class="cal-dot cal-ok"></span> Splněno
+        <span class="cal-dot cal-over"></span> Nad cílem
+        <span class="cal-dot cal-under"></span> Pod cílem
+        <span class="cal-dot cal-empty"></span> Bez záznamu
+    </div>
+
+    <div class="cal-header">
+        <div>Po</div><div>Út</div><div>St</div><div>Čt</div><div>Pá</div><div>So</div><div>Ne</div>
+    </div>
+    <div id="calendar-grid" class="cal-grid"></div>
+</div>
+
+<script src="nutrition.js"></script>
+<script src="github-storage.js"></script>
+<script src="calendar.js"></script>
+</body>
+</html>

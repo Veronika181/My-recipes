@@ -3,6 +3,10 @@ const PLAN_PATH    = "data/denni_plan.json";
 const PROFIL_PATH  = "data/profil.json";
 
 let dnes = new Date().toISOString().slice(0, 10);
+
+// Podpora pro ?datum= parametr z kalendáře
+const urlDatum = new URLSearchParams(window.location.search).get("datum");
+if (urlDatum) dnes = urlDatum;
 let profil = { kcal: 0, protein: 0, carbs: 0, fat: 0 };
 let plan = {};
 
@@ -208,7 +212,7 @@ function renderSoucet() {
     setBar("bar-fat",     "fat",     totalFat,     gFat);
 
     const status = document.getElementById("goal-status");
-    if (!gKcal) { status.textContent = ""; status.className = "goal-status"; return; }
+    if (!gKcal) { status.textContent = ""; status.className = "goal-status"; document.getElementById("remaining-row").style.display = "none"; return; }
     const diff = totalKcal - gKcal;
     const pct  = Math.abs(diff) / gKcal;
     if (pct <= 0.10) {
@@ -221,6 +225,22 @@ function renderSoucet() {
         status.textContent = `Pod cílem o ${Math.abs(diff)} kcal`;
         status.className = "goal-status under";
     }
+
+    // Zbývá dnes
+    const remRow = document.getElementById("remaining-row");
+    const remVal = document.getElementById("remaining-values");
+    remRow.style.display = "block";
+    const zbKcal    = gKcal  - totalKcal;
+    const zbProtein = gProt  - totalProtein;
+    const zbCarbs   = gCarbs - totalCarbs;
+    const zbFat     = gFat   - totalFat;
+    const barva = v => v >= 0 ? "#00eaff" : "#f5576c";
+    remVal.innerHTML = `
+        <span style="color:${barva(zbKcal)}">⚡ ${Math.round(zbKcal)} kcal</span>
+        <span style="color:${barva(zbProtein)}">B: ${Math.round(zbProtein * 10) / 10} g</span>
+        <span style="color:${barva(zbCarbs)}">S: ${Math.round(zbCarbs * 10) / 10} g</span>
+        <span style="color:${barva(zbFat)}">T: ${Math.round(zbFat * 10) / 10} g</span>
+    `;
 }
 
 function setBar(id, type, value, goal) {

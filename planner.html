@@ -13,6 +13,10 @@
     <a href="index.html">Recepty</a>
     &nbsp;|&nbsp;
     <a href="recipe-calculator.html">Kalkulačka</a>
+    &nbsp;|&nbsp;
+    <a href="calendar.html">Kalendář</a>
+    &nbsp;|&nbsp;
+    <a href="import-jidelnicek.html">Import</a>
 </nav>
 
 <!-- GitHub nastavení -->
@@ -136,6 +140,11 @@
     <div class="progress-bar"><div class="progress-fill fat" id="bar-fat" style="width:0%"></div></div>
 
     <p id="goal-status" class="goal-status"></p>
+
+    <div id="remaining-row" style="display:none; margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.1)">
+        <div style="font-size:13px; color:#ccc; margin-bottom:6px">Zbývá dnes:</div>
+        <div id="remaining-values" style="display:flex; gap:16px; flex-wrap:wrap; font-size:14px; font-weight:bold; color:#00eaff"></div>
+    </div>
 </div>
 
 <!-- Nákupní seznam -->

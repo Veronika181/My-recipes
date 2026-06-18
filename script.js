@@ -20,6 +20,22 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (h2 && h2.tagName === "H2") h2.style.display = visible || !q ? "" : "none";
         });
     });
+
+    // Zobraz sdílený recept z URL hash
+    const hash = window.location.hash;
+    if (hash.startsWith("#recept=")) {
+        try {
+            const data = JSON.parse(atob(hash.slice(8)));
+            zobrazSdilenyRecept(data);
+        } catch { /* neplatný hash */ }
+    }
+
+    document.getElementById("share-modal-close").addEventListener("click", () => {
+        document.getElementById("share-modal").style.display = "none";
+    });
+    document.getElementById("share-modal").addEventListener("click", function(e) {
+        if (e.target === this) this.style.display = "none";
+    });
 });
 
 // === NAČTENÍ RECEPTŮ ===
@@ -173,6 +189,7 @@ function vykresliRecept(recept) {
         ${nutBadge}
         <div class="recipe-actions">
             <button class="edit-btn" type="button">✏️ Upravit</button>
+            <button class="share-btn" type="button">🔗 Sdílet</button>
             <button class="delete-btn" type="button">🗑 Smazat</button>
         </div>
     `;
@@ -219,6 +236,8 @@ function vykresliRecept(recept) {
         });
     }
 
+    div.querySelector(".share-btn").addEventListener("click", () => sdiletRecept(recept));
+
     div.querySelector(".edit-btn").addEventListener("click", () => {
         document.getElementById("title").value = recept.title;
         document.getElementById("category").value = recept.category;
@@ -250,4 +269,66 @@ function prelozKategorie(cat) {
         case "vecere":  return "Večeře";
         default:        return cat;
     }
+}
+
+// === SDÍLENÍ RECEPTU ===
+function sdiletRecept(recept) {
+    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(recept))));
+    const url = `${location.origin}${location.pathname}#recept=${encoded}`;
+
+    const text = formatujReceptText(recept);
+
+    if (navigator.share) {
+        navigator.share({ title: recept.title, text, url });
+        return;
+    }
+
+    // Fallback: kopírovat odkaz
+    navigator.clipboard.writeText(url).then(() => {
+        alert(`Odkaz na recept "${recept.title}" byl zkopírován do schránky!`);
+    }).catch(() => {
+        prompt("Zkopíruj odkaz:", url);
+    });
+}
+
+function formatujReceptText(recept) {
+    const n = recept.nutrition;
+    const nutInfo = n ? `\nVýživa: ${n.kcal} kcal | B: ${n.protein}g | S: ${n.carbs}g | T: ${n.fat}g` : "";
+    return `🍽️ ${recept.title}\n\nIngredience:\n${recept.ingredients.join("\n")}\n\nPostup:\n${recept.instructions}${nutInfo}`;
+}
+
+function zobrazSdilenyRecept(recept) {
+    const n = recept.nutrition;
+    const nutHtml = n ? `<div class="nutrition-badge" style="margin-top:12px">
+        <span>⚡ ${n.kcal} kcal</span><span>B: ${n.protein} g</span>
+        <span>S: ${n.carbs} g</span><span>T: ${n.fat} g</span>
+    </div>` : "";
+
+    document.getElementById("share-modal-content").innerHTML = `
+        <h2 style="margin:0 0 4px 0">${recept.title}</h2>
+        <small style="color:#aaa">${prelozKategorie(recept.category)}</small>
+        <h4>Ingredience</h4>
+        <ul>${recept.ingredients.map(i => `<li>${i}</li>`).join("")}</ul>
+        <h4>Postup</h4>
+        <p>${recept.instructions}</p>
+        ${nutHtml}
+        <button id="import-shared-btn" style="margin-top:16px">⬇️ Přidat do mých receptů</button>
+    `;
+
+    document.getElementById("share-modal").style.display = "flex";
+
+    document.getElementById("import-shared-btn").addEventListener("click", async () => {
+        const ulozene = JSON.parse(localStorage.getItem("recepty") || "[]");
+        if (ulozene.some(r => r.title === recept.title)) {
+            alert("Recept s tímto názvem už máš uložen.");
+            return;
+        }
+        ulozene.push(recept);
+        localStorage.setItem("recepty", JSON.stringify(ulozene));
+        vykresliRecept(recept);
+        if (githubJeNastaven()) await githubUloz(RECEPTY_PATH, ulozene, `Přidán sdílený recept: ${recept.title}`);
+        document.getElementById("share-modal").style.display = "none";
+        history.replaceState(null, "", location.pathname);
+        alert(`Recept "${recept.title}" byl přidán!`);
+    });
 }
