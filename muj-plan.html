@@ -244,24 +244,38 @@
     <h2>Moje údaje</h2>
     <p style="font-size:13px; color:rgba(255,255,255,0.4); margin:0 0 16px">Vypočítám ti denní kalorický cíl a sestavím jídelní plán přesně na tvoje tělo.</p>
     <div class="form-row">
-        <label>Váha (kg)<input type="number" id="inp-vaha" placeholder="65" min="30" max="200"></label>
-        <label>Výška (cm)<input type="number" id="inp-vyska" placeholder="168" min="140" max="220"></label>
-        <label>Věk<input type="number" id="inp-vek" placeholder="30" min="15" max="90"></label>
+        <label>Váha (kg)<input type="number" id="inp-vaha" placeholder="65" min="30" max="300" value="98"></label>
+        <label>Výška (cm)<input type="number" id="inp-vyska" placeholder="168" min="130" max="230" value="158"></label>
+        <label>Věk<input type="number" id="inp-vek" placeholder="30" min="15" max="90" value="29"></label>
+        <label>% tělesného tuku
+            <input type="number" id="inp-tuk" placeholder="např. 45" min="5" max="70" value="45"
+                style="border-color:rgba(252,211,77,0.4)">
+        </label>
         <label>Pohlaví
             <select id="inp-pohlavi">
-                <option value="zena">Žena</option>
+                <option value="zena" selected>Žena</option>
                 <option value="muz">Muž</option>
             </select>
         </label>
         <label>Aktivita
             <select id="inp-aktivita">
                 <option value="1.2">Sedavý (práce u stolu)</option>
-                <option value="1.375">Lehká (1–3× týdně sport)</option>
-                <option value="1.55" selected>Střední (3–5× týdně)</option>
+                <option value="1.375" selected>Lehká (1× týdně sport)</option>
+                <option value="1.55">Střední (3–5× týdně)</option>
                 <option value="1.725">Vysoká (6–7× týdně)</option>
                 <option value="1.9">Extrémní (2× denně)</option>
             </select>
         </label>
+        <label>Deficit kalorií
+            <select id="inp-deficit">
+                <option value="400">Mírný −400 kcal</option>
+                <option value="600" selected>Střední −600 kcal ✓</option>
+                <option value="800">Výrazný −800 kcal</option>
+            </select>
+        </label>
+    </div>
+    <div style="background:rgba(252,211,77,0.07); border:1px solid rgba(252,211,77,0.2); border-radius:10px; padding:10px 14px; margin-top:14px; font-size:12px; color:rgba(252,211,77,0.8)">
+        💡 Při % tuku nad 30% použiji přesnější vzorec <strong>Katch-McArdle</strong> (pracuje se štíhlou hmotností těla). Bílkoviny vypočítám z tukuprosté hmoty — ne z celkové váhy.
     </div>
     <div style="display:flex; gap:10px; margin-top:16px; flex-wrap:wrap">
         <button id="compute-btn" style="flex:1; min-width:160px">🥗 Vygenerovat plán</button>
@@ -283,9 +297,7 @@
 
         <div class="macro-goal-bar" id="macro-goals"></div>
 
-        <p style="font-size:12px; color:rgba(255,255,255,0.3); margin:0; text-align:center">
-            Deficit 500 kcal/den → přibližně −0,5 kg týdně
-        </p>
+        <p id="method-note" style="font-size:12px; color:rgba(255,255,255,0.3); margin:0; text-align:center"></p>
     </div>
 
     <!-- Jídla -->
@@ -457,20 +469,23 @@ function renderMeal(meal) {
 }
 
 function renderAll(plan, userData) {
-    const { bmr, tdee, cil, vaha } = userData;
+    const { bmr, tdee, cil, vaha, lbm, protGoal, fatGoal, carbGoal, method, deficit } = userData;
 
     // Stats
     document.getElementById('stats-row').innerHTML = `
         <div class="stat-box"><div class="stat-label">BMR</div><div class="stat-value">${Math.round(bmr)}<span class="stat-unit">kcal</span></div></div>
         <div class="stat-box"><div class="stat-label">TDEE</div><div class="stat-value">${Math.round(tdee)}<span class="stat-unit">kcal</span></div></div>
-        <div class="stat-box"><div class="stat-label">Cíl (deficit)</div><div class="stat-value">${cil}<span class="stat-unit">kcal</span></div></div>
-        <div class="stat-box"><div class="stat-label">Deficit</div><div class="stat-value">${Math.round(tdee-cil)}<span class="stat-unit">kcal</span></div></div>
+        <div class="stat-box"><div class="stat-label">Cíl / den</div><div class="stat-value">${cil}<span class="stat-unit">kcal</span></div></div>
+        <div class="stat-box"><div class="stat-label">Štíhlá hmota</div><div class="stat-value">${lbm > 0 ? lbm.toFixed(1) : '—'}<span class="stat-unit">kg</span></div></div>
     `;
 
+    // Method note
+    const methodEl = document.getElementById('method-note');
+    if (methodEl) methodEl.textContent = method === 'katch'
+        ? `Vzorec: Katch-McArdle (LBM ${lbm.toFixed(1)} kg) · Deficit: −${deficit} kcal/den → −${(deficit*7/7700).toFixed(2)} kg/týden`
+        : `Vzorec: Mifflin-St Jeor · Deficit: −${deficit} kcal/den`;
+
     // Macro goals
-    const protGoal = Math.round(vaha * 1.8);
-    const fatGoal  = Math.round(cil * 0.25 / 9);
-    const carbGoal = Math.round((cil - protGoal * 4 - fatGoal * 9) / 4);
     document.getElementById('macro-goals').innerHTML = `
         <div class="macro-goal"><div class="mg-label">Kalorie</div><div class="mg-val mg-kcal">${cil} kcal</div></div>
         <div class="macro-goal"><div class="mg-label">Bílkoviny</div><div class="mg-val mg-prot">${protGoal} g</div></div>
@@ -494,44 +509,33 @@ function renderAll(plan, userData) {
     const pctT = Math.min(100, Math.round(totT/fatGoal*100));
     const pctK = Math.min(100, Math.round(totKcal/cil*100));
 
+    const bar = (pct, gradient) =>
+        `<div style="flex:1;max-width:180px;background:rgba(255,255,255,0.07);border-radius:6px;height:6px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${gradient};border-radius:6px"></div>
+        </div>`;
+
     document.getElementById('daily-total').innerHTML = `
         <h3>Denní součet</h3>
-        <div class="daily-row">
-            <span>Kalorie</span>
+        <div class="daily-row"><span>Kalorie</span>
             <div style="display:flex;align-items:center;gap:12px;flex:1;justify-content:flex-end">
-                <div style="flex:1;max-width:180px;background:rgba(255,255,255,0.07);border-radius:6px;height:6px;overflow:hidden">
-                    <div style="width:${pctK}%;height:100%;background:linear-gradient(90deg,#3b82f6,#06b6d4);border-radius:6px"></div>
-                </div>
-                <span class="dval" style="color:#93c5fd;min-width:80px;text-align:right">${totKcal} kcal</span>
-            </div>
-        </div>
-        <div class="daily-row">
-            <span>Bílkoviny</span>
+                ${bar(pctK,'linear-gradient(90deg,#3b82f6,#06b6d4)')}
+                <span class="dval" style="color:#93c5fd;min-width:90px;text-align:right">${totKcal} / ${cil} kcal</span>
+            </div></div>
+        <div class="daily-row"><span>Bílkoviny</span>
             <div style="display:flex;align-items:center;gap:12px;flex:1;justify-content:flex-end">
-                <div style="flex:1;max-width:180px;background:rgba(255,255,255,0.07);border-radius:6px;height:6px;overflow:hidden">
-                    <div style="width:${pctP}%;height:100%;background:linear-gradient(90deg,#ec4899,#f43f5e);border-radius:6px"></div>
-                </div>
-                <span class="dval" style="color:#f9a8d4;min-width:80px;text-align:right">${totP} g / ${protGoal} g</span>
-            </div>
-        </div>
-        <div class="daily-row">
-            <span>Sacharidy</span>
+                ${bar(pctP,'linear-gradient(90deg,#ec4899,#f43f5e)')}
+                <span class="dval" style="color:#f9a8d4;min-width:90px;text-align:right">${totP} / ${protGoal} g</span>
+            </div></div>
+        <div class="daily-row"><span>Sacharidy</span>
             <div style="display:flex;align-items:center;gap:12px;flex:1;justify-content:flex-end">
-                <div style="flex:1;max-width:180px;background:rgba(255,255,255,0.07);border-radius:6px;height:6px;overflow:hidden">
-                    <div style="width:${pctS}%;height:100%;background:linear-gradient(90deg,#f59e0b,#f97316);border-radius:6px"></div>
-                </div>
-                <span class="dval" style="color:#fcd34d;min-width:80px;text-align:right">${totS} g / ${carbGoal} g</span>
-            </div>
-        </div>
-        <div class="daily-row">
-            <span>Tuky</span>
+                ${bar(pctS,'linear-gradient(90deg,#f59e0b,#f97316)')}
+                <span class="dval" style="color:#fcd34d;min-width:90px;text-align:right">${totS} / ${carbGoal} g</span>
+            </div></div>
+        <div class="daily-row"><span>Tuky</span>
             <div style="display:flex;align-items:center;gap:12px;flex:1;justify-content:flex-end">
-                <div style="flex:1;max-width:180px;background:rgba(255,255,255,0.07);border-radius:6px;height:6px;overflow:hidden">
-                    <div style="width:${pctT}%;height:100%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:6px"></div>
-                </div>
-                <span class="dval" style="color:#86efac;min-width:80px;text-align:right">${totT} g / ${fatGoal} g</span>
-            </div>
-        </div>
+                ${bar(pctT,'linear-gradient(90deg,#22c55e,#16a34a)')}
+                <span class="dval" style="color:#86efac;min-width:90px;text-align:right">${totT} / ${fatGoal} g</span>
+            </div></div>
     `;
 
     document.getElementById('results').style.display = 'block';
@@ -547,22 +551,47 @@ document.getElementById('compute-btn').addEventListener('click', () => {
     const vaha     = parseFloat(document.getElementById('inp-vaha').value);
     const vyska    = parseFloat(document.getElementById('inp-vyska').value);
     const vek      = parseFloat(document.getElementById('inp-vek').value);
+    const tukPct   = parseFloat(document.getElementById('inp-tuk').value) || 0;
     const pohlavi  = document.getElementById('inp-pohlavi').value;
     const aktivita = parseFloat(document.getElementById('inp-aktivita').value);
+    const deficit  = parseInt(document.getElementById('inp-deficit').value);
     const err      = document.getElementById('form-err');
 
     if (!vaha || !vyska || !vek) { err.textContent = 'Vyplň prosím váhu, výšku a věk.'; return; }
-    if (vaha < 30 || vaha > 250) { err.textContent = 'Váha musí být mezi 30 a 250 kg.'; return; }
-    if (vyska < 130 || vyska > 230) { err.textContent = 'Výška musí být mezi 130 a 230 cm.'; return; }
+    if (vaha < 30 || vaha > 300) { err.textContent = 'Váha musí být v rozmezí 30–300 kg.'; return; }
+    if (vyska < 130 || vyska > 230) { err.textContent = 'Výška musí být v rozmezí 130–230 cm.'; return; }
     err.textContent = '';
 
-    const bmr = 10 * vaha + 6.25 * vyska - 5 * vek + (pohlavi === 'muz' ? 5 : -161);
+    // Výpočet BMR
+    let bmr, lbm = 0, method = 'mifflin';
+    if (tukPct >= 5 && tukPct <= 70) {
+        lbm = vaha * (1 - tukPct / 100);
+        if (tukPct >= 30) {
+            // Katch-McArdle — přesnější pro vysoký % tuku
+            bmr = 370 + 21.6 * lbm;
+            method = 'katch';
+        } else {
+            bmr = 10 * vaha + 6.25 * vyska - 5 * vek + (pohlavi === 'muz' ? 5 : -161);
+        }
+    } else {
+        bmr = 10 * vaha + 6.25 * vyska - 5 * vek + (pohlavi === 'muz' ? 5 : -161);
+    }
+
     const tdee = bmr * aktivita;
     const minKcal = pohlavi === 'zena' ? 1200 : 1500;
-    const cil = Math.max(minKcal, Math.round(tdee - 500));
+    const cil = Math.max(minKcal, Math.round(tdee - deficit));
+
+    // Makra — při vysokém % tuku protein z LBM, jinak z celkové váhy
+    const protBase = (lbm > 0 && tukPct >= 30) ? lbm : vaha;
+    const protGoal = Math.round(protBase * 2.0);
+    const fatGoal  = Math.round(cil * 0.25 / 9);
+    const carbGoal = Math.max(50, Math.round((cil - protGoal * 4 - fatGoal * 9) / 4));
+
+    // Ulož do localStorage
+    localStorage.setItem('muj_plan_data', JSON.stringify({ vaha, vyska, vek, tukPct, pohlavi, aktivita, deficit }));
 
     dayOffset = 0;
-    userData = { bmr, tdee, cil, vaha };
+    userData = { bmr, tdee, cil, vaha, lbm, protGoal, fatGoal, carbGoal, method, deficit };
     const plan = generatePlan(cil);
     renderAll(plan, userData);
 });
@@ -573,6 +602,18 @@ document.getElementById('shuffle-btn').addEventListener('click', () => {
     const plan = generatePlan(userData.cil);
     renderAll(plan, userData);
 });
+
+// Načti uložená data
+const saved = JSON.parse(localStorage.getItem('muj_plan_data') || 'null');
+if (saved) {
+    if (saved.vaha)     document.getElementById('inp-vaha').value     = saved.vaha;
+    if (saved.vyska)    document.getElementById('inp-vyska').value    = saved.vyska;
+    if (saved.vek)      document.getElementById('inp-vek').value      = saved.vek;
+    if (saved.tukPct)   document.getElementById('inp-tuk').value      = saved.tukPct;
+    if (saved.pohlavi)  document.getElementById('inp-pohlavi').value  = saved.pohlavi;
+    if (saved.aktivita) document.getElementById('inp-aktivita').value = saved.aktivita;
+    if (saved.deficit)  document.getElementById('inp-deficit').value  = saved.deficit;
+}
 </script>
 
 </body>
