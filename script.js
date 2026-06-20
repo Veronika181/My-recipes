@@ -49,6 +49,40 @@ function decodeSharedRecipeFromHash(hash) {
     }
 }
 
+function ensureToastHost() {
+    let host = document.getElementById("toast-host");
+    if (host) return host;
+
+    host = document.createElement("div");
+    host.id = "toast-host";
+    host.className = "toast-host";
+    document.body.appendChild(host);
+    return host;
+}
+
+function showToast(message, type = "info", timeout = 2800) {
+    const host = ensureToastHost();
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    host.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        toast.classList.add("show");
+    });
+
+    const close = () => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 240);
+    };
+
+    const timer = setTimeout(close, timeout);
+    toast.addEventListener("click", () => {
+        clearTimeout(timer);
+        close();
+    });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     inicializujGithubUI(async () => {
         document.querySelectorAll(".recipe-list").forEach(el => el.innerHTML = "");
@@ -159,7 +193,7 @@ async function pridatRecept() {
     const editTitle = addBtn.dataset.editTitle;
 
     if (!nazev || !ingredienceText || !postup) {
-        alert("Vyplň prosím všechny položky.");
+        showToast("Vyplň prosím všechny položky.", "warn");
         return;
     }
 
@@ -367,9 +401,24 @@ function sdiletRecept(recept) {
 
 function kopirujOdkazReceptu(url, title) {
     navigator.clipboard.writeText(url).then(() => {
-        alert(`Odkaz na recept "${title}" byl zkopírován do schránky!`);
+        showToast(`Odkaz na recept "${title}" byl zkopírován do schránky.`, "ok");
     }).catch(() => {
-        prompt("Zkopíruj odkaz:", url);
+        // Fallback pro prohlížeče bez přístupu ke Clipboard API.
+        const tmp = document.createElement("textarea");
+        tmp.value = url;
+        tmp.setAttribute("readonly", "");
+        tmp.style.position = "absolute";
+        tmp.style.left = "-9999px";
+        document.body.appendChild(tmp);
+        tmp.select();
+        const copied = document.execCommand("copy");
+        tmp.remove();
+
+        if (copied) {
+            showToast(`Odkaz na recept "${title}" byl zkopírován do schránky.`, "ok");
+        } else {
+            showToast("Kopírování odkazu selhalo. Zkus to prosím ručně.", "warn", 4200);
+        }
     });
 }
 
@@ -415,7 +464,7 @@ function zobrazSdilenyRecept(recept) {
     document.getElementById("import-shared-btn").addEventListener("click", async () => {
         const ulozene = nactiReceptyZLocalStorage();
         if (ulozene.some(r => r.title === recept.title)) {
-            alert("Recept s tímto názvem už máš uložen.");
+            showToast("Recept s tímto názvem už máš uložen.", "warn");
             return;
         }
         ulozene.push(recept);
@@ -424,6 +473,6 @@ function zobrazSdilenyRecept(recept) {
         if (githubJeNastaven()) await githubUloz(RECEPTY_PATH, ulozene, `Přidán sdílený recept: ${recept.title}`);
         document.getElementById("share-modal").style.display = "none";
         history.replaceState(null, "", location.pathname);
-        alert(`Recept "${recept.title}" byl přidán!`);
+        showToast(`Recept "${recept.title}" byl přidán.`, "ok");
     });
 }

@@ -740,6 +740,51 @@ nav a.active {
     color: #fff;
 }
 
+/* === TOASTY === */
+.toast-host {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 1200;
+    pointer-events: none;
+}
+.toast {
+    min-width: 240px;
+    max-width: 420px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(19,22,41,0.92);
+    color: #e8eaf6;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.45);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    pointer-events: auto;
+    cursor: pointer;
+}
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+.toast-ok {
+    border-color: rgba(134,239,172,0.45);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.45), 0 0 0 1px rgba(134,239,172,0.18);
+}
+.toast-warn {
+    border-color: rgba(252,211,77,0.55);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.45), 0 0 0 1px rgba(252,211,77,0.2);
+}
+.toast-info {
+    border-color: rgba(147,197,253,0.45);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.45), 0 0 0 1px rgba(147,197,253,0.18);
+}
+
 /* === MĚSÍČNÍ KALENDÁŘ === */
 .cal-nav {
     display: flex;
@@ -841,4 +886,14 @@ nav a.active {
     .cal-meal-dot { font-size: 9px; }
     .cal-nav button { padding: 6px 10px; font-size: 12px; }
     nav a { font-size: 12px; padding: 6px 12px; }
+    .toast-host {
+        left: 14px;
+        right: 14px;
+        bottom: 14px;
+    }
+    .toast {
+        max-width: none;
+        min-width: 0;
+        width: 100%;
+    }
 }
