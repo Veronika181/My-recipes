@@ -1,5 +1,54 @@
 const RECEPTY_PATH = "data/recepty.json";
 
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+function asFiniteNumber(value, fallback = 0) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+}
+
+function nactiReceptyZLocalStorage() {
+    try {
+        const raw = localStorage.getItem("recepty") || "[]";
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+        console.warn("Poškozená data receptů v localStorage, obnovuji:", err);
+        localStorage.removeItem("recepty");
+        return [];
+    }
+}
+
+function ulozReceptyDoLocalStorage(recepty) {
+    try {
+        localStorage.setItem("recepty", JSON.stringify(recepty));
+        return true;
+    } catch (err) {
+        console.warn("Uložení receptů do localStorage selhalo:", err);
+        nastavSaveStatus("Nelze uložit data v tomto prohlížeči.", "warn");
+        return false;
+    }
+}
+
+function decodeSharedRecipeFromHash(hash) {
+    try {
+        const base64 = hash.slice(8);
+        const decoded = decodeURIComponent(escape(atob(base64)));
+        const parsed = JSON.parse(decoded);
+        if (!parsed || typeof parsed !== "object") return null;
+        return parsed;
+    } catch {
+        return null;
+    }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     inicializujGithubUI(async () => {
         document.querySelectorAll(".recipe-list").forEach(el => el.innerHTML = "");
@@ -24,10 +73,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Zobraz sdílený recept z URL hash
     const hash = window.location.hash;
     if (hash.startsWith("#recept=")) {
-        try {
-            const data = JSON.parse(atob(hash.slice(8)));
-            zobrazSdilenyRecept(data);
-        } catch { /* neplatný hash */ }
+        const data = decodeSharedRecipeFromHash(hash);
+        if (data) zobrazSdilenyRecept(data);
     }
 
     document.getElementById("share-modal-close").addEventListener("click", () => {
@@ -43,22 +90,27 @@ async function nactiRecepty() {
     let recepty = null;
 
     if (githubJeNastaven()) {
-        recepty = await githubNacti(RECEPTY_PATH);
-        if (recepty) {
-            // Migrace: přidej nutrition pokud chybí
-            let changed = false;
-            recepty = recepty.map(r => {
-                if (!r.nutrition) { r.nutrition = vypocitejVyzivu(r.ingredients); changed = true; }
-                return r;
-            });
-            localStorage.setItem("recepty", JSON.stringify(recepty));
-            if (changed) await githubUloz(RECEPTY_PATH, recepty, "Doplnění nutričních hodnot");
+        try {
+            recepty = await githubNacti(RECEPTY_PATH);
+            if (recepty && Array.isArray(recepty)) {
+                // Migrace: přidej nutrition pokud chybí
+                let changed = false;
+                recepty = recepty.map(r => {
+                    if (!r.nutrition) { r.nutrition = vypocitejVyzivu(r.ingredients); changed = true; }
+                    return r;
+                });
+                ulozReceptyDoLocalStorage(recepty);
+                if (changed) await githubUloz(RECEPTY_PATH, recepty, "Doplnění nutričních hodnot");
+            }
+        } catch (err) {
+            console.warn("Načtení z GitHubu selhalo, přepínám na lokální data:", err);
+            recepty = null;
         }
     }
 
     if (!recepty) {
         // Fallback: localStorage nebo výchozí JSON
-        const ulozene = JSON.parse(localStorage.getItem("recepty") || "[]");
+        const ulozene = nactiReceptyZLocalStorage();
         if (ulozene.length === 0) {
             await nactiVychoziRecepty();
             return;
@@ -68,23 +120,32 @@ async function nactiRecepty() {
             if (!r.nutrition) { r.nutrition = vypocitejVyzivu(r.ingredients); changed = true; }
             return r;
         });
-        if (changed) localStorage.setItem("recepty", JSON.stringify(recepty));
+        if (changed) ulozReceptyDoLocalStorage(recepty);
     }
 
     recepty.forEach(r => vykresliRecept(r));
 }
 
 async function nactiVychoziRecepty() {
-    const response = await fetch("recipes.json");
-    const vychoziRecepty = await response.json();
-    vychoziRecepty.forEach(r => {
-        if (!r.nutrition) r.nutrition = vypocitejVyzivu(r.ingredients);
-    });
-    localStorage.setItem("recepty", JSON.stringify(vychoziRecepty));
-    vychoziRecepty.forEach(r => vykresliRecept(r));
+    try {
+        const response = await fetch("recipes.json", { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-    if (githubJeNastaven()) {
-        await githubUloz(RECEPTY_PATH, vychoziRecepty, "Inicializace výchozích receptů");
+        const vychoziRecepty = await response.json();
+        if (!Array.isArray(vychoziRecepty)) throw new Error("Neplatný formát recipes.json");
+
+        vychoziRecepty.forEach(r => {
+            if (!r.nutrition) r.nutrition = vypocitejVyzivu(r.ingredients);
+        });
+        ulozReceptyDoLocalStorage(vychoziRecepty);
+        vychoziRecepty.forEach(r => vykresliRecept(r));
+
+        if (githubJeNastaven()) {
+            await githubUloz(RECEPTY_PATH, vychoziRecepty, "Inicializace výchozích receptů");
+        }
+    } catch (err) {
+        console.error("Načtení výchozích receptů selhalo:", err);
+        nastavSaveStatus("Nepodařilo se načíst výchozí recepty.", "warn");
     }
 }
 
@@ -110,7 +171,7 @@ async function pridatRecept() {
         nutrition: vypocitejVyzivu(ingredienceText.split("\n"))
     };
 
-    let ulozene = JSON.parse(localStorage.getItem("recepty") || "[]");
+    let ulozene = nactiReceptyZLocalStorage();
 
     if (editTitle) {
         // Editace — nahradit existující recept
@@ -131,7 +192,7 @@ async function pridatRecept() {
     }
 
     vykresliRecept(recept);
-    localStorage.setItem("recepty", JSON.stringify(ulozene));
+    ulozReceptyDoLocalStorage(ulozene);
 
     document.getElementById("title").value = "";
     document.getElementById("ingredients").value = "";
@@ -156,36 +217,52 @@ function nastavSaveStatus(text, typ) {
 // === VYKRESLENÍ RECEPTU ===
 function vykresliRecept(recept) {
     const container = document.getElementById(recept.category);
+    if (!container) return;
+
     const div = document.createElement("div");
     div.className = "recipe";
-    div.dataset.title = recept.title;
+    div.dataset.title = String(recept.title || "");
 
-    const n = recept.nutrition;
+    const safeTitle = escapeHtml(recept.title);
+    const safeCategory = escapeHtml(prelozKategorie(recept.category));
+    const ingredients = Array.isArray(recept.ingredients) ? recept.ingredients : [];
+    const ingredientsHtml = ingredients.map(i => `<li>${escapeHtml(i)}</li>`).join("");
+    const safeInstructions = escapeHtml(recept.instructions).replace(/\n/g, "<br>");
+
+    const rawNutrition = recept.nutrition;
+    const n = rawNutrition ? {
+        kcal: asFiniteNumber(rawNutrition.kcal),
+        protein: asFiniteNumber(rawNutrition.protein),
+        carbs: asFiniteNumber(rawNutrition.carbs),
+        fat: asFiniteNumber(rawNutrition.fat),
+        manual: !!rawNutrition.manual,
+    } : null;
+
     const nutBadge = n ? `
         <div class="nutrition-badge">
-            <span>⚡ ${n.kcal} kcal</span>
-            <span>B: ${n.protein} g</span>
-            <span>S: ${n.carbs} g</span>
-            <span>T: ${n.fat} g</span>
+            <span>⚡ ${asFiniteNumber(n.kcal)} kcal</span>
+            <span>B: ${asFiniteNumber(n.protein)} g</span>
+            <span>S: ${asFiniteNumber(n.carbs)} g</span>
+            <span>T: ${asFiniteNumber(n.fat)} g</span>
             ${n.manual ? '<span class="manual-tag">✎ ručně</span>' : ''}
             <button class="override-btn" type="button">Upravit</button>
         </div>
         <div class="nutrition-override" style="display:none">
-            <input type="number" class="ov-kcal"    placeholder="kcal"         value="${n.kcal}">
-            <input type="number" class="ov-protein" placeholder="Bílkoviny g"  value="${n.protein}">
-            <input type="number" class="ov-carbs"   placeholder="Sacharidy g"  value="${n.carbs}">
-            <input type="number" class="ov-fat"     placeholder="Tuky g"       value="${n.fat}">
+            <input type="number" class="ov-kcal"    placeholder="kcal"         value="${asFiniteNumber(n.kcal)}">
+            <input type="number" class="ov-protein" placeholder="Bílkoviny g"  value="${asFiniteNumber(n.protein)}">
+            <input type="number" class="ov-carbs"   placeholder="Sacharidy g"  value="${asFiniteNumber(n.carbs)}">
+            <input type="number" class="ov-fat"     placeholder="Tuky g"       value="${asFiniteNumber(n.fat)}">
             <button class="save-override-btn" type="button">Uložit</button>
         </div>
     ` : '';
 
     div.innerHTML = `
-        <h3>${recept.title}</h3>
-        <small>${prelozKategorie(recept.category)}</small>
+        <h3>${safeTitle}</h3>
+        <small>${safeCategory}</small>
         <h4>Ingredience</h4>
-        <ul>${recept.ingredients.map(i => `<li>${i}</li>`).join("")}</ul>
+        <ul>${ingredientsHtml}</ul>
         <h4>Postup</h4>
-        <p>${recept.instructions}</p>
+        <p>${safeInstructions}</p>
         ${nutBadge}
         <div class="recipe-actions">
             <button class="edit-btn" type="button">✏️ Upravit</button>
@@ -210,11 +287,11 @@ function vykresliRecept(recept) {
             const carbs   = parseFloat(div.querySelector(".ov-carbs").value)   || 0;
             const fat     = parseFloat(div.querySelector(".ov-fat").value)     || 0;
 
-            const ulozene = JSON.parse(localStorage.getItem("recepty") || "[]");
+            const ulozene = nactiReceptyZLocalStorage();
             const idx = ulozene.findIndex(r => r.title === recept.title);
             if (idx !== -1) {
                 ulozene[idx].nutrition = { kcal, protein, carbs, fat, manual: true, unmatched: [] };
-                localStorage.setItem("recepty", JSON.stringify(ulozene));
+                ulozReceptyDoLocalStorage(ulozene);
                 if (githubJeNastaven()) {
                     await githubUloz(RECEPTY_PATH, ulozene, `Upraveny nutriční hodnoty: ${recept.title}`);
                 }
@@ -251,9 +328,9 @@ function vykresliRecept(recept) {
 
     div.querySelector(".delete-btn").addEventListener("click", async () => {
         if (!confirm(`Smazat recept "${recept.title}"?`)) return;
-        let ulozene = JSON.parse(localStorage.getItem("recepty") || "[]");
+        let ulozene = nactiReceptyZLocalStorage();
         ulozene = ulozene.filter(r => r.title !== recept.title);
-        localStorage.setItem("recepty", JSON.stringify(ulozene));
+        ulozReceptyDoLocalStorage(ulozene);
         div.remove();
         if (githubJeNastaven()) await githubUloz(RECEPTY_PATH, ulozene, `Smazán recept: ${recept.title}`);
     });
@@ -279,13 +356,18 @@ function sdiletRecept(recept) {
     const text = formatujReceptText(recept);
 
     if (navigator.share) {
-        navigator.share({ title: recept.title, text, url });
+        navigator.share({ title: recept.title, text, url }).catch(() => {
+            kopirujOdkazReceptu(url, recept.title);
+        });
         return;
     }
 
-    // Fallback: kopírovat odkaz
+    kopirujOdkazReceptu(url, recept.title);
+}
+
+function kopirujOdkazReceptu(url, title) {
     navigator.clipboard.writeText(url).then(() => {
-        alert(`Odkaz na recept "${recept.title}" byl zkopírován do schránky!`);
+        alert(`Odkaz na recept "${title}" byl zkopírován do schránky!`);
     }).catch(() => {
         prompt("Zkopíruj odkaz:", url);
     });
@@ -298,19 +380,32 @@ function formatujReceptText(recept) {
 }
 
 function zobrazSdilenyRecept(recept) {
-    const n = recept.nutrition;
+    const safeTitle = escapeHtml(recept.title);
+    const safeCategory = escapeHtml(prelozKategorie(recept.category));
+    const safeIngredients = (Array.isArray(recept.ingredients) ? recept.ingredients : [])
+        .map(i => `<li>${escapeHtml(i)}</li>`)
+        .join("");
+    const safeInstructions = escapeHtml(recept.instructions).replace(/\n/g, "<br>");
+
+    const n = recept.nutrition ? {
+        kcal: asFiniteNumber(recept.nutrition.kcal),
+        protein: asFiniteNumber(recept.nutrition.protein),
+        carbs: asFiniteNumber(recept.nutrition.carbs),
+        fat: asFiniteNumber(recept.nutrition.fat),
+    } : null;
+
     const nutHtml = n ? `<div class="nutrition-badge" style="margin-top:12px">
         <span>⚡ ${n.kcal} kcal</span><span>B: ${n.protein} g</span>
         <span>S: ${n.carbs} g</span><span>T: ${n.fat} g</span>
     </div>` : "";
 
     document.getElementById("share-modal-content").innerHTML = `
-        <h2 style="margin:0 0 4px 0">${recept.title}</h2>
-        <small style="color:#aaa">${prelozKategorie(recept.category)}</small>
+        <h2 style="margin:0 0 4px 0">${safeTitle}</h2>
+        <small style="color:#aaa">${safeCategory}</small>
         <h4>Ingredience</h4>
-        <ul>${recept.ingredients.map(i => `<li>${i}</li>`).join("")}</ul>
+        <ul>${safeIngredients}</ul>
         <h4>Postup</h4>
-        <p>${recept.instructions}</p>
+        <p>${safeInstructions}</p>
         ${nutHtml}
         <button id="import-shared-btn" style="margin-top:16px">⬇️ Přidat do mých receptů</button>
     `;
@@ -318,13 +413,13 @@ function zobrazSdilenyRecept(recept) {
     document.getElementById("share-modal").style.display = "flex";
 
     document.getElementById("import-shared-btn").addEventListener("click", async () => {
-        const ulozene = JSON.parse(localStorage.getItem("recepty") || "[]");
+        const ulozene = nactiReceptyZLocalStorage();
         if (ulozene.some(r => r.title === recept.title)) {
             alert("Recept s tímto názvem už máš uložen.");
             return;
         }
         ulozene.push(recept);
-        localStorage.setItem("recepty", JSON.stringify(ulozene));
+        ulozReceptyDoLocalStorage(ulozene);
         vykresliRecept(recept);
         if (githubJeNastaven()) await githubUloz(RECEPTY_PATH, ulozene, `Přidán sdílený recept: ${recept.title}`);
         document.getElementById("share-modal").style.display = "none";

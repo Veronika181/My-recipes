@@ -1,9 +1,35 @@
 const GITHUB_REPO = "Veronika181/My-recipes";
 const GITHUB_BRANCH = "main";
 const GITHUB_API = `https://api.github.com/repos/${GITHUB_REPO}/contents`;
+const GITHUB_TOKEN_KEY = "github_token";
+
+function ziskejGithubTokenZeStorage() {
+    const sessionToken = sessionStorage.getItem(GITHUB_TOKEN_KEY);
+    if (sessionToken) return sessionToken;
+
+    // Jednorázová migrace ze starého localStorage do sessionStorage.
+    const legacyToken = localStorage.getItem(GITHUB_TOKEN_KEY);
+    if (legacyToken) {
+        sessionStorage.setItem(GITHUB_TOKEN_KEY, legacyToken);
+        localStorage.removeItem(GITHUB_TOKEN_KEY);
+        return legacyToken;
+    }
+
+    return "";
+}
+
+function ulozGithubTokenDoStorage(token) {
+    sessionStorage.setItem(GITHUB_TOKEN_KEY, token);
+    localStorage.removeItem(GITHUB_TOKEN_KEY);
+}
+
+function smazGithubTokenZeStorage() {
+    sessionStorage.removeItem(GITHUB_TOKEN_KEY);
+    localStorage.removeItem(GITHUB_TOKEN_KEY);
+}
 
 function githubToken() {
-    return localStorage.getItem("github_token") || "";
+    return ziskejGithubTokenZeStorage();
 }
 
 function githubJeNastaven() {
@@ -25,12 +51,16 @@ async function githubNacti(path) {
         const r = await fetch(`${GITHUB_API}/${path}?ref=${GITHUB_BRANCH}&t=${Date.now()}`, {
             headers: githubHeaders()
         });
-        if (!r.ok) return null;
+        if (!r.ok) {
+            console.warn(`GitHub načtení selhalo (${r.status}) pro ${path}.`);
+            return null;
+        }
         const data = await r.json();
         localStorage.setItem(`gh_sha_${path}`, data.sha);
         const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ""))));
         return JSON.parse(decoded);
-    } catch {
+    } catch (err) {
+        console.warn("GitHub načtení vyhodilo chybu:", err);
         return null;
     }
 }
@@ -58,8 +88,10 @@ async function githubUloz(path, obsah, zprava) {
             localStorage.setItem(`gh_sha_${path}`, data.content.sha);
             return true;
         }
+        console.warn(`GitHub uložení selhalo (${r.status}) pro ${path}.`);
         return false;
-    } catch {
+    } catch (err) {
+        console.warn("GitHub uložení vyhodilo chybu:", err);
         return false;
     }
 }
@@ -76,7 +108,8 @@ async function githubZiskejSha(path) {
         const data = await r.json();
         localStorage.setItem(`gh_sha_${path}`, data.sha);
         return data.sha;
-    } catch {
+    } catch (err) {
+        console.warn("Získání SHA z GitHubu selhalo:", err);
         return null;
     }
 }
@@ -91,7 +124,8 @@ async function githubOverToken(token) {
             }
         });
         return r.ok;
-    } catch {
+    } catch (err) {
+        console.warn("Ověření GitHub tokenu selhalo:", err);
         return false;
     }
 }
@@ -109,7 +143,9 @@ function inicializujGithubUI(naPoKonekci) {
     });
 
     const tokenInput = document.getElementById("github-token-input");
-    if (githubJeNastaven()) tokenInput.value = localStorage.getItem("github_token");
+    if (githubJeNastaven()) {
+        nastavljGithubStatus("Token je uložen jen pro aktuální otevřenou relaci.", "");
+    }
 
     document.getElementById("github-save-token-btn").addEventListener("click", async () => {
         const token = tokenInput.value.trim();
@@ -117,7 +153,7 @@ function inicializujGithubUI(naPoKonekci) {
         nastavljGithubStatus("Ověřuji...", "");
         const ok = await githubOverToken(token);
         if (ok) {
-            localStorage.setItem("github_token", token);
+            ulozGithubTokenDoStorage(token);
             nastavljGithubStatus("Připojeno k GitHubu ✓", "ok");
             aktualizujBadge();
             if (naPoKonekci) await naPoKonekci();
@@ -127,7 +163,7 @@ function inicializujGithubUI(naPoKonekci) {
     });
 
     document.getElementById("github-clear-token-btn").addEventListener("click", () => {
-        localStorage.removeItem("github_token");
+        smazGithubTokenZeStorage();
         document.getElementById("github-token-input").value = "";
         nastavljGithubStatus("Odpojeno.", "");
         aktualizujBadge();
